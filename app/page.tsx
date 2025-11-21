@@ -262,7 +262,23 @@ export default function HomePage() {
 
   const allSlots = useMemo(() => {
     if (!rawAllSlots) return [];
-    return rawAllSlots as unknown as SlotState[];
+    const slots = rawAllSlots as unknown as SlotState[];
+    // Debug: Log slot 0 to check multiplier
+    if (slots.length > 0) {
+      console.log('Slot 0 data:', {
+        epochId: slots[0].epochId.toString(),
+        initPrice: slots[0].initPrice.toString(),
+        startTime: slots[0].startTime.toString(),
+        price: slots[0].price.toString(),
+        multiplier: slots[0].multiplier.toString(),
+        multiplierFormatted: formatUnits(slots[0].multiplier, 18),
+        pps: slots[0].pps.toString(),
+        mined: slots[0].mined.toString(),
+        miner: slots[0].miner,
+        color: slots[0].color,
+      });
+    }
+    return slots;
   }, [rawAllSlots]);
 
   // Get the selected slot from the allSlots array
@@ -710,7 +726,7 @@ export default function HomePage() {
                     </div>
                     {/* Multiplier Badge - Next to MINER label */}
                     <div className="bg-cyan-500 text-black text-[8px] font-bold px-1 py-0.5 rounded-full leading-none">
-                      ×{slotState && slotState.multiplier !== undefined ? (Number(slotState.multiplier) / 1e18).toFixed(1) : "0.0"}
+                      ×{slotState && slotState.multiplier !== undefined ? Number(formatUnits(slotState.multiplier, 18)).toFixed(1) : "0.0"}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-white truncate">

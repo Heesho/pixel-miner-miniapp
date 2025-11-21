@@ -1,7 +1,7 @@
 export const CONTRACT_ADDRESSES = {
   pixel: "0xa23952322DaEbcfeE1B953B55bFEA858E50B785b",
   miner: "0x823dE5874A68c269324e44576fB479Ee5905c6e0",
-  multicall: "0xfEaCABeeB2B20C526d0Bb1Db2B32eDCf65360E98",
+  multicall: "0x9Ac9b473929189925F13661E0974bB26e6b89CF4",
   weth: "0x4200000000000000000000000000000000000006",
   provider: "0xba366c82815983ff130c23ced78bd95e1f2c18ea",
 } as const;
@@ -125,12 +125,12 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "uint256",
-            name: "multiplier",
+            name: "pps",
             type: "uint256",
           },
           {
             internalType: "uint256",
-            name: "pps",
+            name: "multiplier",
             type: "uint256",
           },
           {
@@ -196,12 +196,12 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "uint256",
-            name: "multiplier",
+            name: "pps",
             type: "uint256",
           },
           {
             internalType: "uint256",
-            name: "pps",
+            name: "multiplier",
             type: "uint256",
           },
           {
