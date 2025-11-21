@@ -89,7 +89,7 @@ export default function AboutPage() {
     args: [address ?? zeroAddress],
     chainId: base.id,
     query: {
-      refetchInterval: 3_000,
+      refetchInterval: 15_000,
     },
   });
 
@@ -106,7 +106,7 @@ export default function AboutPage() {
     args: [BigInt(0), BigInt(255)],
     chainId: base.id,
     query: {
-      refetchInterval: 3_000,
+      refetchInterval: 20_000,
     },
   });
 

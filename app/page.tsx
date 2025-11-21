@@ -239,7 +239,7 @@ export default function HomePage() {
     args: [address ?? zeroAddress],
     chainId: base.id,
     query: {
-      refetchInterval: 3_000,
+      refetchInterval: 10_000,
     },
   });
 
@@ -256,7 +256,7 @@ export default function HomePage() {
     args: [BigInt(0), BigInt(255)],
     chainId: base.id,
     query: {
-      refetchInterval: 3_000, // Keep it fresh with 3 second refresh
+      refetchInterval: 8_000, // Refresh every 8 seconds
     },
   });
 
