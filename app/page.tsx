@@ -49,6 +49,7 @@ type SlotState = {
   price: bigint;
   multiplier: bigint;
   pps: bigint;
+  multiplierTime: bigint;
   mined: bigint;
   miner: Address;
   color: string;
@@ -91,6 +92,12 @@ const formatAddress = (addr?: string) => {
   const normalized = addr.toLowerCase();
   if (normalized === zeroAddress) return "No miner";
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+};
+
+const formatCountdown = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
 const initialsFrom = (label?: string) => {
@@ -438,6 +445,9 @@ export default function HomePage() {
   // Local state for smooth mined counter interpolation
   const [interpolatedMined, setInterpolatedMined] = useState<bigint | null>(null);
 
+  // Local state for countdown timer
+  const [countdownSeconds, setCountdownSeconds] = useState<number>(0);
+
   // Update interpolated mined amount smoothly between fetches
   useEffect(() => {
     if (!slotState) {
@@ -456,6 +466,30 @@ export default function HomePage() {
           return prev + slotState.pps;
         });
       }
+    }, 1_000);
+
+    return () => clearInterval(interval);
+  }, [slotState]);
+
+  // Update countdown timer for multiplier
+  useEffect(() => {
+    if (!slotState) {
+      setCountdownSeconds(0);
+      return;
+    }
+
+    // Initialize countdown from contract value
+    const initialSeconds = Number(slotState.multiplierTime);
+    setCountdownSeconds(initialSeconds);
+
+    if (initialSeconds === 0) return;
+
+    // Decrement every second
+    const interval = setInterval(() => {
+      setCountdownSeconds((prev) => {
+        if (prev <= 1) return 0;
+        return prev - 1;
+      });
     }, 1_000);
 
     return () => clearInterval(interval);
@@ -722,6 +756,12 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-white truncate">
                     <span className="truncate">{occupantDisplay.primary}</span>
+                    {/* Multiplier Countdown - Show when countdown is active */}
+                    {countdownSeconds > 0 && (
+                      <span className="text-[9px] text-gray-400 flex-shrink-0">
+                        • {formatCountdown(countdownSeconds)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
