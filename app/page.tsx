@@ -635,31 +635,31 @@ export default function HomePage() {
       <AddToFarcasterDialog showOnFirstVisit={true} />
 
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-black px-2 pb-4 shadow-inner"
+        className="relative flex h-full w-full max-w-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-black px-1.5 pb-2 shadow-inner"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
         }}
       >
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-wide">GRID</h1>
+          <div className="flex items-center justify-between mb-0.5">
+            <h1 className="text-xl font-bold tracking-wide">GRID</h1>
             {context?.user ? (
-              <div className="flex items-center gap-2 rounded-full bg-black px-3 py-1">
-                <Avatar className="h-8 w-8 border border-zinc-800">
+              <div className="flex items-center gap-1.5 rounded-full bg-black px-2 py-0.5">
+                <Avatar className="h-6 w-6 border border-zinc-800">
                   <AvatarImage
                     src={userAvatarUrl || undefined}
                     alt={userDisplayName}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-zinc-800 text-white">
+                  <AvatarFallback className="bg-zinc-800 text-white text-[10px]">
                     {initialsFrom(userDisplayName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="leading-tight text-left">
-                  <div className="text-sm font-bold">{userDisplayName}</div>
+                  <div className="text-xs font-bold">{userDisplayName}</div>
                   {userHandle ? (
-                    <div className="text-xs text-gray-400">{userHandle}</div>
+                    <div className="text-[10px] text-gray-400">{userHandle}</div>
                   ) : null}
                 </div>
               </div>
@@ -668,39 +668,39 @@ export default function HomePage() {
 
           <Card
             className={cn(
-              "mt-1 border-zinc-800 bg-black transition-shadow",
+              "border-zinc-800 bg-black transition-shadow",
               occupantDisplay.isYou &&
                 "border-cyan-500 shadow-[inset_0_0_24px_rgba(34,211,238,0.55)] animate-glow",
             )}
           >
-            <CardContent className="flex items-center justify-between gap-3 p-3">
+            <CardContent className="flex items-center justify-between gap-2 p-2">
               {/* Miner Section */}
               <div
                 className={cn(
-                  "flex items-center gap-2 min-w-0 flex-1",
+                  "flex items-center gap-1.5 min-w-0 flex-1",
                   neynarUser?.user?.fid && "cursor-pointer hover:opacity-80 transition-opacity"
                 )}
                 onClick={neynarUser?.user?.fid ? handleViewKingGlazerProfile : undefined}
               >
-                <Avatar className="h-10 w-10 flex-shrink-0">
+                <Avatar className="h-8 w-8 flex-shrink-0">
                   <AvatarImage
                     src={occupantDisplay.avatarUrl || undefined}
                     alt={occupantDisplay.primary}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-zinc-800 text-white text-sm uppercase">
+                  <AvatarFallback className="bg-zinc-800 text-white text-xs uppercase">
                     {minerState ? (
                       occupantFallbackInitials
                     ) : (
-                      <CircleUserRound className="h-5 w-5" />
+                      <CircleUserRound className="h-4 w-4" />
                     )}
                   </AvatarFallback>
                 </Avatar>
                 <div className="leading-tight text-left min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <div
                       className={cn(
-                        "text-[10px] font-bold uppercase tracking-[0.08em]",
+                        "text-[9px] font-bold uppercase tracking-[0.08em]",
                         occupantDisplay.isYou
                           ? "text-cyan-400"
                           : "text-gray-400",
@@ -709,38 +709,38 @@ export default function HomePage() {
                       MINER
                     </div>
                     {/* Multiplier Badge - Next to MINER label */}
-                    <div className="bg-cyan-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                    <div className="bg-cyan-500 text-black text-[8px] font-bold px-1 py-0.5 rounded-full leading-none">
                       ×{slotState ? (Number(slotState.multiplier) / 1e18).toFixed(1) : "1.0"}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-white truncate">
+                  <div className="flex items-center gap-1 text-xs text-white truncate">
                     <span className="truncate">{occupantDisplay.primary}</span>
                   </div>
                 </div>
               </div>
 
               {/* Stats Section - Mined and PNL stacked */}
-              <div className="flex flex-col gap-1 flex-shrink-0">
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
                 {/* Mined Row */}
-                <div className="flex items-center gap-1.5">
-                  <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-gray-400 w-12 text-right">
+                <div className="flex items-center gap-1">
+                  <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400 w-10 text-right">
                     MINED
                   </div>
-                  <div className="text-sm font-semibold text-white">
+                  <div className="text-xs font-semibold text-white">
                     {minedDisplay}
                   </div>
-                  <div className="text-[10px] text-gray-400">
+                  <div className="text-[9px] text-gray-400">
                     ${minedUsdValue}
                   </div>
                 </div>
 
                 {/* PNL Row */}
-                <div className="flex items-center gap-1.5">
-                  <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-gray-400 w-12 text-right">
+                <div className="flex items-center gap-1">
+                  <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400 w-10 text-right">
                     PNL
                   </div>
                   <div className={cn(
-                    "text-sm font-semibold",
+                    "text-xs font-semibold",
                     slotState && (() => {
                       const halfInitPrice = slotState.initPrice / 2n;
                       const pnl = slotState.price > slotState.initPrice
@@ -763,7 +763,7 @@ export default function HomePage() {
                         })()
                       : "Ξ—"}
                   </div>
-                  <div className="text-[10px] text-gray-400">
+                  <div className="text-[9px] text-gray-400">
                     {pnlUsdValue}
                   </div>
                 </div>
@@ -771,9 +771,9 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <div className="mt-1.5 flex justify-center">
+          <div className="mt-1 flex justify-center">
             <div
-              className="grid gap-[0.5px] bg-zinc-900 p-[0.5px] rounded w-96"
+              className="grid gap-[0.5px] bg-zinc-900 p-[0.5px] rounded w-80"
               style={{
                 gridTemplateColumns: "repeat(16, 1fr)",
               }}
@@ -803,45 +803,45 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-1.5 flex flex-col gap-1.5 pb-2">
-            <div className="grid grid-cols-2 gap-1.5">
+          <div className="mt-1 flex flex-col gap-1 pb-1">
+            <div className="grid grid-cols-2 gap-1">
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-2">
-                  <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400">
+                <CardContent className="grid gap-0.5 p-1.5">
+                  <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING RATE
                   </div>
-                  <div className="text-lg font-semibold text-white">
-                    ▪{glazeRateDisplay}<span className="text-[10px] text-gray-400">/s</span>
+                  <div className="text-base font-semibold text-white">
+                    ▪{glazeRateDisplay}<span className="text-[9px] text-gray-400">/s</span>
                   </div>
-                  <div className="text-[9px] text-gray-400">
+                  <div className="text-[8px] text-gray-400">
                     ${glazeRateUsdValue}/s
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-2">
-                  <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400">
+                <CardContent className="grid gap-0.5 p-1.5">
+                  <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING PRICE
                   </div>
-                  <div className="text-lg font-semibold text-cyan-400">
+                  <div className="text-base font-semibold text-cyan-400">
                     {glazePriceDisplay}
                   </div>
-                  <div className="text-[9px] text-gray-400">
+                  <div className="text-[8px] text-gray-400">
                     ${slotState ? (Number(formatEther(slotState.price)) * ethUsdPrice).toFixed(2) : "0.00"}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="flex gap-1.5 items-center">
+            <div className="flex gap-1 items-center">
               <div className="grid grid-cols-6 gap-0.5">
                 {COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
                     className={cn(
-                      "w-5 h-5 rounded border transition-colors",
+                      "w-4 h-4 rounded border transition-colors",
                       selectedColor === color
                         ? "border-cyan-400 ring-1 ring-cyan-400"
                         : "border-zinc-700 hover:border-cyan-400"
@@ -851,7 +851,7 @@ export default function HomePage() {
                 ))}
               </div>
               <Button
-                className="flex-1 rounded-xl bg-cyan-500 hover:bg-cyan-600 py-2 text-sm font-bold text-black shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex-1 rounded-xl bg-cyan-500 hover:bg-cyan-600 py-1.5 text-xs font-bold text-black shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={handleGlaze}
                 disabled={isGlazeDisabled}
               >
@@ -860,9 +860,9 @@ export default function HomePage() {
             </div>
 
             {/* Your Stats Section */}
-            <div className="mt-2">
-              <h2 className="text-[10px] font-bold text-cyan-400 mb-1">YOUR STATS</h2>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
+            <div className="mt-1">
+              <h2 className="text-[9px] font-bold text-cyan-400 mb-0.5">YOUR STATS</h2>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px]">
                 <div className="flex justify-between">
                   <span className="text-gray-400">ETH:</span>
                   <span className="text-white font-semibold">Ξ{ethBalanceDisplay}</span>
