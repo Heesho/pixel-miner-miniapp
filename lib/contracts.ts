@@ -241,4 +241,70 @@ export const MULTICALL_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "getAuction",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "epochId",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "initPrice",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "paymentToken",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "price",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "paymentTokenPrice",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "wethAccumulated",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "wethBalance",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "paymentTokenBalance",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Multicall.AuctionState",
+        name: "state",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
