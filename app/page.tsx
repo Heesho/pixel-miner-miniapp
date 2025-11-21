@@ -773,7 +773,7 @@ export default function HomePage() {
 
           <div className="mt-1 flex justify-center">
             <div
-              className="grid gap-[0.5px] bg-zinc-900 p-[0.5px] rounded w-80"
+              className="grid gap-[0.5px] bg-zinc-900 p-[0.5px] rounded w-full max-w-full"
               style={{
                 gridTemplateColumns: "repeat(16, 1fr)",
               }}
@@ -857,55 +857,6 @@ export default function HomePage() {
               >
                 {buttonLabel}
               </Button>
-            </div>
-
-            {/* Your Stats Section */}
-            <div className="mt-1">
-              <h2 className="text-[9px] font-bold text-cyan-400 mb-0.5">YOUR STATS</h2>
-              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px]">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">ETH:</span>
-                  <span className="text-white font-semibold">Ξ{ethBalanceDisplay}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">WETH:</span>
-                  <span className="text-white font-semibold">Ξ{minerState && minerState.wethBalance !== undefined
-                    ? formatEth(minerState.wethBalance, 4)
-                    : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Spent:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplay.isYou
-                    ? formatEth(slotState.initPrice / 2n, 5)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Earned:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplay.isYou && slotState.price > slotState.initPrice
-                    ? formatEth((slotState.price * 80n) / 100n, 5)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Mined:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplay.isYou && interpolatedMined !== null
-                    ? formatTokenAmount(interpolatedMined, DONUT_DECIMALS, 2)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Rate:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplay.isYou
-                    ? formatTokenAmount(slotState.pps, DONUT_DECIMALS, 4)
-                    : "0"}/s</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Pixel:</span>
-                  <span className="text-white font-semibold">▪{pixelBalanceDisplay}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Owned:</span>
-                  <span className="text-white font-semibold">{ownedSlotIndices.size}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

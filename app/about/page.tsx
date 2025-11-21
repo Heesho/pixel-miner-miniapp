@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { sdk } from "@farcaster/miniapp-sdk";
+import { useAccount, useReadContract } from "wagmi";
+import { base } from "wagmi/chains";
+import { formatEther, formatUnits, zeroAddress, type Address } from "viem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NavBar } from "@/components/nav-bar";
 import { AddToFarcasterButton } from "@/components/add-to-farcaster-button";
 import { DuneDashboardButton } from "@/components/dune-dashboard-button";
+import { CONTRACT_ADDRESSES, MULTICALL_ABI } from "@/lib/contracts";
 
 type MiniAppContext = {
   user?: {
@@ -16,6 +20,28 @@ type MiniAppContext = {
   };
 };
 
+type MinerState = {
+  pps: bigint;
+  pixelPrice: bigint;
+  pixelBalance: bigint;
+  ethBalance: bigint;
+  wethBalance: bigint;
+};
+
+type SlotState = {
+  epochId: bigint;
+  initPrice: bigint;
+  startTime: bigint;
+  price: bigint;
+  multiplier: bigint;
+  pps: bigint;
+  mined: bigint;
+  miner: Address;
+  color: string;
+};
+
+const DONUT_DECIMALS = 18;
+
 const initialsFrom = (label?: string) => {
   if (!label) return "";
   const stripped = label.replace(/[^a-zA-Z0-9]/g, "");
@@ -23,9 +49,118 @@ const initialsFrom = (label?: string) => {
   return stripped.slice(0, 2).toUpperCase();
 };
 
+const formatEth = (value: bigint, maximumFractionDigits = 4) => {
+  if (value === 0n) return "0";
+  const asNumber = Number(formatEther(value));
+  if (!Number.isFinite(asNumber)) {
+    return formatEther(value);
+  }
+  return asNumber.toLocaleString(undefined, {
+    maximumFractionDigits,
+  });
+};
+
+const formatTokenAmount = (
+  value: bigint,
+  decimals: number,
+  maximumFractionDigits = 2,
+) => {
+  if (value === 0n) return "0";
+  const asNumber = Number(formatUnits(value, decimals));
+  if (!Number.isFinite(asNumber)) {
+    return formatUnits(value, decimals);
+  }
+  return asNumber.toLocaleString(undefined, {
+    maximumFractionDigits,
+  });
+};
+
 export default function AboutPage() {
   const readyRef = useRef(false);
   const [context, setContext] = useState<MiniAppContext | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { address } = useAccount();
+
+  // Fetch miner state
+  const { data: rawMinerState } = useReadContract({
+    address: CONTRACT_ADDRESSES.multicall,
+    abi: MULTICALL_ABI,
+    functionName: "getMiner",
+    args: [address ?? zeroAddress],
+    chainId: base.id,
+    query: {
+      refetchInterval: 3_000,
+    },
+  });
+
+  const minerState = useMemo(() => {
+    if (!rawMinerState) return undefined;
+    return rawMinerState as unknown as MinerState;
+  }, [rawMinerState]);
+
+  // Fetch all slots
+  const { data: rawAllSlots } = useReadContract({
+    address: CONTRACT_ADDRESSES.multicall,
+    abi: MULTICALL_ABI,
+    functionName: "getSlots",
+    args: [BigInt(0), BigInt(255)],
+    chainId: base.id,
+    query: {
+      refetchInterval: 3_000,
+    },
+  });
+
+  const allSlots = useMemo(() => {
+    if (!rawAllSlots) return [];
+    return rawAllSlots as unknown as SlotState[];
+  }, [rawAllSlots]);
+
+  // Find owned slots
+  const ownedSlotIndices = useMemo(() => {
+    if (!address || !allSlots || allSlots.length === 0) return new Set<number>();
+    const owned = new Set<number>();
+    allSlots.forEach((slot, index) => {
+      if (slot.miner.toLowerCase() === address.toLowerCase()) {
+        owned.add(index);
+      }
+    });
+    return owned;
+  }, [address, allSlots]);
+
+  // Get selected slot or first owned slot
+  const slotState = useMemo(() => {
+    if (!allSlots || allSlots.length === 0) return undefined;
+    // If user owns slots, show the first owned slot, otherwise show slot 0
+    if (ownedSlotIndices.size > 0) {
+      const firstOwnedIndex = Array.from(ownedSlotIndices)[0];
+      return allSlots[firstOwnedIndex];
+    }
+    return allSlots[0];
+  }, [allSlots, ownedSlotIndices]);
+
+  const occupantDisplayIsYou = useMemo(() => {
+    if (!slotState || !address) return false;
+    return slotState.miner.toLowerCase() === address.toLowerCase();
+  }, [slotState, address]);
+
+  const [interpolatedMined, setInterpolatedMined] = useState<bigint | null>(null);
+
+  useEffect(() => {
+    if (!slotState) {
+      setInterpolatedMined(null);
+      return;
+    }
+    setInterpolatedMined(slotState.mined);
+    const interval = setInterval(() => {
+      if (slotState.pps > 0n) {
+        setInterpolatedMined((prev) => {
+          if (!prev) return slotState.mined;
+          return prev + slotState.pps;
+        });
+      }
+    }, 1_000);
+    return () => clearInterval(interval);
+  }, [slotState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +244,55 @@ export default function AboutPage() {
                 variant="default"
               />
             </div>
+
+            {/* Your Stats Section */}
+            <section>
+              <h2 className="text-lg font-bold text-cyan-400 mb-2">Your Stats</h2>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">ETH:</span>
+                  <span className="text-white font-semibold">Ξ{minerState ? formatEth(minerState.ethBalance, 4) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">WETH:</span>
+                  <span className="text-white font-semibold">Ξ{minerState && minerState.wethBalance !== undefined
+                    ? formatEth(minerState.wethBalance, 4)
+                    : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Spent:</span>
+                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou
+                    ? formatEth(slotState.initPrice / 2n, 5)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Earned:</span>
+                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou && slotState.price > slotState.initPrice
+                    ? formatEth((slotState.price * 80n) / 100n, 5)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Mined:</span>
+                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou && interpolatedMined !== null
+                    ? formatTokenAmount(interpolatedMined, DONUT_DECIMALS, 2)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Rate:</span>
+                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou
+                    ? formatTokenAmount(slotState.pps, DONUT_DECIMALS, 4)
+                    : "0"}/s</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Pixel:</span>
+                  <span className="text-white font-semibold">▪{minerState ? formatTokenAmount(minerState.pixelBalance, DONUT_DECIMALS, 2) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Owned:</span>
+                  <span className="text-white font-semibold">{ownedSlotIndices.size}</span>
+                </div>
+              </div>
+            </section>
 
             <section>
               <h2 className="text-lg font-bold text-cyan-400 mb-2">
