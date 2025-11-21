@@ -751,8 +751,15 @@ export default function HomePage() {
                       MINER
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-white truncate">
-                    <span className="truncate">{occupantDisplay.primary}</span>
+                  <div className="flex flex-col">
+                    <div className="text-xs text-white truncate">
+                      {occupantDisplay.primary}
+                    </div>
+                    {occupantDisplay.secondary && (
+                      <div className="text-[10px] text-gray-400 truncate">
+                        {occupantDisplay.secondary}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
