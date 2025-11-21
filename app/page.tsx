@@ -757,8 +757,23 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Stats Section - Mined and PNL stacked */}
+              {/* Stats Section - Multiplier, Mined and PNL stacked */}
               <div className="flex flex-col gap-0.5 flex-shrink-0">
+                {/* Multiplier Row */}
+                <div className="flex items-center gap-1">
+                  <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400 w-10 text-right">
+                    MULT
+                  </div>
+                  <div className="text-xs font-semibold text-cyan-400">
+                    ×{slotState && slotState.multiplier !== undefined ? Number(formatUnits(slotState.multiplier, 18)).toFixed(1) : "0.0"}
+                  </div>
+                  {countdownSeconds > 0 && (
+                    <div className="text-[9px] text-gray-400">
+                      {formatCountdown(countdownSeconds)}
+                    </div>
+                  )}
+                </div>
+
                 {/* Mined Row */}
                 <div className="flex items-center gap-1">
                   <div className="text-[8px] font-bold uppercase tracking-[0.08em] text-gray-400 w-10 text-right">
@@ -805,38 +820,6 @@ export default function HomePage() {
                     {pnlUsdValue}
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pixel/Slot Stats Card */}
-          <Card className="border-zinc-800 bg-black mt-1">
-            <CardContent className="flex items-center justify-between gap-2 p-1.5">
-              {/* Left: Pixel Index */}
-              <div className="flex items-center gap-2">
-                <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                  PIXEL
-                </div>
-                <div className="text-base font-bold text-white">
-                  #{selectedIndex}
-                </div>
-              </div>
-
-              {/* Right: Multiplier and Countdown */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                    MULTIPLIER
-                  </div>
-                  <div className="bg-cyan-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
-                    ×{slotState && slotState.multiplier !== undefined ? Number(formatUnits(slotState.multiplier, 18)).toFixed(1) : "0.0"}
-                  </div>
-                </div>
-                {countdownSeconds > 0 && (
-                  <div className="text-[9px] text-gray-400 whitespace-nowrap">
-                    New in {formatCountdown(countdownSeconds)}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
