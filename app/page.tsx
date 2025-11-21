@@ -392,8 +392,18 @@ export default function HomePage() {
       if (!targetAddress) {
         throw new Error("Unable to determine wallet address.");
       }
-      const price = slotState.price;
-      const epochId = slotState.epochId;
+
+      // Fetch fresh slot data right before transaction to avoid stale price/epochId
+      const freshSlotData = await readContract(wagmiConfig, {
+        address: CONTRACT_ADDRESSES.multicall as Address,
+        abi: MULTICALL_ABI,
+        functionName: "getSlot",
+        args: [BigInt(selectedIndex)],
+        chainId: base.id,
+      }) as unknown as SlotState;
+
+      const price = freshSlotData.price;
+      const epochId = freshSlotData.epochId;
       const deadline = BigInt(
         Math.floor(Date.now() / 1000) + DEADLINE_BUFFER_SECONDS,
       );
@@ -406,6 +416,17 @@ export default function HomePage() {
         functionName: "getEntropyFee",
         chainId: base.id,
       }) as bigint;
+
+      console.log('Mining transaction params:', {
+        price: price.toString(),
+        epochId: epochId.toString(),
+        deadline: deadline.toString(),
+        maxPrice: maxPrice.toString(),
+        entropyFee: entropyFee.toString(),
+        totalValue: (price + entropyFee).toString(),
+        selectedIndex,
+        selectedColor,
+      });
 
       await writeContract({
         account: targetAddress as Address,
