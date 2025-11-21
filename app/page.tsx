@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CONTRACT_ADDRESSES, MULTICALL_ABI } from "@/lib/contracts";
+import { wagmiConfig } from "@/lib/wagmi";
 import { cn, getEthPrice } from "@/lib/utils";
 import { useAccountData } from "@/hooks/useAccountData";
 import { NavBar } from "@/components/nav-bar";
@@ -383,7 +384,7 @@ export default function HomePage() {
       const maxPrice = price === 0n ? 0n : (price * 105n) / 100n;
 
       // Get entropy fee
-      const entropyFee = await readContract({
+      const entropyFee = await readContract(wagmiConfig, {
         address: CONTRACT_ADDRESSES.multicall as Address,
         abi: MULTICALL_ABI,
         functionName: "getEntropyFee",
