@@ -426,6 +426,7 @@ export default function HomePage() {
       );
       refetchMinerState();
       refetchAllSlots(); // Refresh the entire grid
+      setSelectedColor(null); // Clear color selection after placement
       const resetTimer = setTimeout(() => {
         resetWrite();
       }, 500);
@@ -991,14 +992,12 @@ export default function HomePage() {
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-2 gap-1">
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="flex items-center justify-between p-1.5">
-                  <div>
-                    <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                      MINING RATE
-                    </div>
-                    <div className="text-sm font-semibold text-white">
-                      ▪{glazeRateDisplay}<span className="text-[8px] text-gray-400">/s</span>
-                    </div>
+                <CardContent className="grid gap-0.5 p-1.5">
+                  <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
+                    MINING RATE
+                  </div>
+                  <div className="text-base font-semibold text-white">
+                    ▪{glazeRateDisplay}<span className="text-[9px] text-gray-400">/s</span>
                   </div>
                   <div className="text-[8px] text-gray-400">
                     ${glazeRateUsdValue}/s
@@ -1007,14 +1006,12 @@ export default function HomePage() {
               </Card>
 
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="flex items-center justify-between p-1.5">
-                  <div>
-                    <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                      MINING PRICE
-                    </div>
-                    <div className="text-sm font-semibold text-white">
-                      {glazePriceDisplay}
-                    </div>
+                <CardContent className="grid gap-0.5 p-1.5">
+                  <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
+                    MINING PRICE
+                  </div>
+                  <div className="text-base font-semibold text-white">
+                    {glazePriceDisplay}
                   </div>
                   <div className="text-[8px] text-gray-400">
                     ${slotState ? (Number(formatEther(slotState.price)) * ethUsdPrice).toFixed(2) : "0.00"}
