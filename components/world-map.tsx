@@ -127,9 +127,7 @@ export function WorldMap({
   const formatPrice = (price: bigint): string => {
     const eth = parseFloat(formatEther(price));
     if (eth === 0) return "Ξ0";
-    if (eth < 0.0001) return `Ξ${eth.toExponential(1)}`;
-    if (eth < 1) return `Ξ${eth.toFixed(4)}`;
-    return `Ξ${eth.toFixed(2)}`;
+    return `Ξ${eth.toFixed(5)}`;
   };
 
   return (
@@ -188,9 +186,9 @@ export function WorldMap({
                 </div>
               )}
 
-              {/* Bottom-right: Price (large) */}
+              {/* Bottom-right: Price */}
               {territory && (
-                <div className="absolute bottom-1.5 right-1.5 text-white text-[18px] font-semibold">
+                <div className="absolute bottom-1.5 right-1.5 text-white text-[12px] font-semibold">
                   {formatPrice(territory.price)}
                 </div>
               )}

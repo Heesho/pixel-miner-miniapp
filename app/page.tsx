@@ -24,7 +24,7 @@ import { cn, getEthPrice } from "@/lib/utils";
 import { useAccountData } from "@/hooks/useAccountData";
 import { NavBar } from "@/components/nav-bar";
 import { AddToFarcasterDialog } from "@/components/add-to-farcaster-dialog";
-import { WorldMap, RISK_REGIONS } from "@/components/world-map";
+import { WorldMap } from "@/components/world-map";
 
 type MiniAppContext = {
   user?: {
@@ -733,7 +733,7 @@ export default function HomePage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold tracking-wide">
-              {hoveredIndex !== null ? RISK_REGIONS[hoveredIndex]?.name || "TERRITORY" : "WORLD MAP"}
+              GRID
             </h1>
             {context?.user ? (
               <div className="flex items-center gap-1.5 rounded-full bg-black px-2 py-0.5">
