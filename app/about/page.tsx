@@ -247,7 +247,7 @@ export default function AboutPage() {
 
             {/* Your Stats Section */}
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">Your Stats</h2>
+              <h2 className="text-lg font-bold text-white mb-2">Your Stats</h2>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400">ETH:</span>
@@ -295,7 +295,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 What Is Pixel Miner
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -306,7 +306,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 How Mining Works
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -319,7 +319,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 Revenue Split
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -330,7 +330,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 Emission Schedule
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -341,7 +341,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 Proof of Just-In-Time Stake
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -353,7 +353,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 Treasury
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -363,7 +363,7 @@ export default function AboutPage() {
             </section>
 
             <section className="pb-4">
-              <h2 className="text-lg font-bold text-cyan-400 mb-2">
+              <h2 className="text-lg font-bold text-white mb-2">
                 Builder Codes
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
