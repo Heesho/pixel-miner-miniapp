@@ -69,6 +69,10 @@ type WorldMapProps = {
   territories: Array<SlotState>;
   ownedIndices: Set<number>;
   territoryOwnerPfps: Map<number, string>;
+  animatingSlots?: {
+    priceJump: Set<number>;
+    multiplierChange: Set<number>;
+  };
 };
 
 export function WorldMap({
@@ -77,6 +81,7 @@ export function WorldMap({
   onHoverIndex,
   territories,
   ownedIndices,
+  animatingSlots,
 }: WorldMapProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -139,6 +144,8 @@ export function WorldMap({
           const isSelected = selectedIndex === region.id;
           const isOwned = ownedIndices.has(region.id);
           const hasOwner = territory && territory.miner && territory.miner !== zeroAddress;
+          const isPriceJumping = animatingSlots?.priceJump.has(region.id) ?? false;
+          const isMultiplierChanging = animatingSlots?.multiplierChange.has(region.id) ?? false;
 
           // All boxes have black background
           let bgColor = "black";
@@ -157,7 +164,7 @@ export function WorldMap({
               key={region.id}
               className={`w-full h-full rounded-lg border cursor-pointer transition-all relative p-1.5 ${
                 isOwned ? "shadow-[inset_0_0_24px_rgba(34,211,238,0.55)]" : ""
-              }`}
+              } ${isPriceJumping ? "animate-box-price-jump" : ""} ${isMultiplierChanging ? "animate-multiplier-change" : ""}`}
               style={{
                 backgroundColor: bgColor,
                 borderColor: borderColor,
@@ -182,7 +189,9 @@ export function WorldMap({
 
               {/* Bottom-right: Price */}
               {territory && (
-                <div className="absolute bottom-1.5 right-1.5 text-white text-[12px] font-semibold">
+                <div className={`absolute bottom-1.5 right-1.5 text-white text-[12px] font-semibold ${
+                  isPriceJumping ? "animate-price-jump" : ""
+                }`}>
                   {formatPrice(territory.price)}
                 </div>
               )}

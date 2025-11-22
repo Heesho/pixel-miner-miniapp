@@ -288,6 +288,62 @@ export default function HomePage() {
     return rawAllSlots as unknown as SlotState[];
   }, [rawAllSlots]);
 
+  // Track animations for price jumps and multiplier changes
+  const [animatingSlots, setAnimatingSlots] = useState<{
+    priceJump: Set<number>;
+    multiplierChange: Set<number>;
+  }>({
+    priceJump: new Set(),
+    multiplierChange: new Set(),
+  });
+  const previousSlotsRef = useRef<SlotState[]>([]);
+
+  // Detect price jumps and multiplier changes
+  useEffect(() => {
+    if (!allSlots || allSlots.length === 0) return;
+
+    const previous = previousSlotsRef.current;
+    if (previous.length === 0) {
+      previousSlotsRef.current = allSlots;
+      return;
+    }
+
+    const newPriceJumps = new Set<number>();
+    const newMultiplierChanges = new Set<number>();
+
+    allSlots.forEach((slot, index) => {
+      const prevSlot = previous[index];
+      if (!prevSlot || !slot) return;
+
+      // Detect price increase (someone mined this slot)
+      if (slot.price > prevSlot.price) {
+        newPriceJumps.add(index);
+      }
+
+      // Detect multiplier change
+      if (slot.multiplier !== prevSlot.multiplier) {
+        newMultiplierChanges.add(index);
+      }
+    });
+
+    if (newPriceJumps.size > 0 || newMultiplierChanges.size > 0) {
+      setAnimatingSlots({
+        priceJump: newPriceJumps,
+        multiplierChange: newMultiplierChanges,
+      });
+
+      // Clear animations after they complete
+      setTimeout(() => {
+        setAnimatingSlots({
+          priceJump: new Set(),
+          multiplierChange: new Set(),
+        });
+      }, 1500); // Animation duration (multiplier-change is 1.4s)
+    }
+
+    previousSlotsRef.current = allSlots;
+  }, [allSlots]);
+
   // Fetch profile pictures for territory owners
   useEffect(() => {
     const fetchPfps = async () => {
@@ -927,6 +983,7 @@ export default function HomePage() {
               territories={allSlots}
               ownedIndices={ownedSlotIndices}
               territoryOwnerPfps={territoryOwnerPfps}
+              animatingSlots={animatingSlots}
             />
           </div>
 
