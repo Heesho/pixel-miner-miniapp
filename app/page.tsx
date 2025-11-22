@@ -24,6 +24,7 @@ import { cn, getEthPrice } from "@/lib/utils";
 import { useAccountData } from "@/hooks/useAccountData";
 import { NavBar } from "@/components/nav-bar";
 import { AddToFarcasterDialog } from "@/components/add-to-farcaster-dialog";
+import { WorldMap, RISK_REGIONS } from "@/components/world-map";
 
 type MiniAppContext = {
   user?: {
@@ -108,21 +109,6 @@ const initialsFrom = (label?: string) => {
   return stripped.slice(0, 2).toUpperCase();
 };
 
-const COLORS = [
-  "#FF0000", // Red
-  "#FF6B00", // Orange
-  "#FFD700", // Gold
-  "#00FF00", // Lime
-  "#00FFFF", // Cyan
-  "#0080FF", // Blue
-  "#8000FF", // Purple
-  "#FF00FF", // Magenta
-  "#FF1493", // Deep Pink
-  "#FFFFFF", // White
-  "#808080", // Gray
-  "#000000", // Black
-];
-
 const getTextColor = (bgColor: string) => {
   const hex = bgColor.replace("#", "");
   const r = parseInt(hex.substr(0, 2), 16);
@@ -130,6 +116,34 @@ const getTextColor = (bgColor: string) => {
   const b = parseInt(hex.substr(4, 2), 16);
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 128 ? "#000000" : "#FFFFFF";
+};
+
+// Territory colors for different players
+const TERRITORY_COLORS = [
+  "#FF6B6B", // Red
+  "#4ECDC4", // Teal
+  "#45B7D1", // Blue
+  "#FFA07A", // Light Salmon
+  "#98D8C8", // Mint
+  "#F7DC6F", // Yellow
+  "#BB8FCE", // Purple
+  "#85C1E2", // Sky Blue
+  "#F8B88B", // Peach
+  "#A8E6CF", // Light Green
+  "#FFD3B6", // Apricot
+  "#FFAAA5", // Light Coral
+];
+
+// Generate a consistent color for a given address
+const getPlayerColor = (address: string): string => {
+  if (!address || address === zeroAddress) return "#3f3f46";
+
+  // Use the address to generate a consistent index
+  const hash = address.toLowerCase().split('').reduce((acc, char) => {
+    return acc + char.charCodeAt(0);
+  }, 0);
+
+  return TERRITORY_COLORS[hash % TERRITORY_COLORS.length];
 };
 
 export default function HomePage() {
@@ -141,8 +155,9 @@ export default function HomePage() {
   const [glazeResult, setGlazeResult] = useState<"success" | "failure" | null>(
     null,
   );
-  const [selectedColor, setSelectedColor] = useState("#FF0000");
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [territoryOwnerPfps, setTerritoryOwnerPfps] = useState<Map<number, string>>(new Map());
   const glazeResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -256,12 +271,12 @@ export default function HomePage() {
     return rawMinerState as unknown as MinerState;
   }, [rawMinerState]);
 
-  // Fetch all slots (0-255) in one call - super efficient!
+  // Fetch all slots (0-41) - 42 territories like Risk board game
   const { data: rawAllSlots, refetch: refetchAllSlots } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall,
     abi: MULTICALL_ABI,
     functionName: "getSlots",
-    args: [BigInt(0), BigInt(255)],
+    args: [BigInt(0), BigInt(41)],
     chainId: base.id,
     query: {
       refetchInterval: 8_000, // Refresh every 8 seconds
@@ -272,6 +287,36 @@ export default function HomePage() {
     if (!rawAllSlots) return [];
     return rawAllSlots as unknown as SlotState[];
   }, [rawAllSlots]);
+
+  // Fetch profile pictures for territory owners
+  useEffect(() => {
+    const fetchPfps = async () => {
+      const newPfps = new Map<number, string>();
+
+      for (let i = 0; i < allSlots.length; i++) {
+        const slot = allSlots[i];
+        if (slot && slot.miner && slot.miner !== zeroAddress) {
+          try {
+            const res = await fetch(`/api/neynar/user?address=${encodeURIComponent(slot.miner)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.user?.pfpUrl) {
+                newPfps.set(i, data.user.pfpUrl);
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch pfp for territory ${i}:`, error);
+          }
+        }
+      }
+
+      setTerritoryOwnerPfps(newPfps);
+    };
+
+    if (allSlots.length > 0) {
+      fetchPfps();
+    }
+  }, [allSlots]);
 
   // Get the selected slot from the allSlots array
   const slotState = useMemo(() => {
@@ -409,6 +454,9 @@ export default function HomePage() {
         chainId: base.id,
       }) as bigint;
 
+      // Get the player's auto-assigned color
+      const playerColor = getPlayerColor(targetAddress);
+
       await writeContract({
         account: targetAddress as Address,
         address: CONTRACT_ADDRESSES.multicall as Address,
@@ -420,7 +468,7 @@ export default function HomePage() {
           epochId,
           deadline,
           maxPrice,
-          selectedColor,
+          playerColor,
         ],
         value: price + entropyFee,
         chainId: base.id,
@@ -433,7 +481,6 @@ export default function HomePage() {
   }, [
     address,
     connectAsync,
-    selectedColor,
     selectedIndex,
     slotState,
     primaryConnector,
@@ -677,15 +724,17 @@ export default function HomePage() {
       <AddToFarcasterDialog showOnFirstVisit={true} />
 
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-black px-1.5 pb-2 shadow-inner"
+        className="relative flex h-full w-full max-w-[520px] flex-col overflow-y-auto rounded-[28px] bg-black px-1.5 pb-2 shadow-inner"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
         }}
       >
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between mb-0.5">
-            <h1 className="text-xl font-bold tracking-wide">GRID</h1>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold tracking-wide">
+              {hoveredIndex !== null ? RISK_REGIONS[hoveredIndex]?.name || "TERRITORY" : "WORLD MAP"}
+            </h1>
             {context?.user ? (
               <div className="flex items-center gap-1.5 rounded-full bg-black px-2 py-0.5">
                 <Avatar className="h-6 w-6 border border-zinc-800">
@@ -831,39 +880,18 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <div className="mt-1 flex justify-center">
-            <div
-              className="grid gap-[0.5px] bg-zinc-900 p-[0.5px] rounded w-full max-w-full"
-              style={{
-                gridTemplateColumns: "repeat(16, 1fr)",
-              }}
-            >
-              {Array.from({ length: 256 }).map((_, index) => {
-                const isOwned = ownedSlotIndices.has(index);
-                const isSelected = index === selectedIndex;
-                const slot = allSlots[index];
-                const pixelColor = isSelected ? selectedColor : (slot?.color || "#3f3f46"); // Show selected color if selected, otherwise slot color
-
-                return (
-                  <div
-                    key={index}
-                    className={cn(
-                      "aspect-square transition-all cursor-pointer",
-                      isSelected && "scale-125 z-10 shadow-2xl",
-                      isOwned && "ring-1 ring-cyan-400"
-                    )}
-                    style={{
-                      backgroundColor: pixelColor,
-                    }}
-                    onClick={() => setSelectedIndex(index)}
-                    title={`Pixel #${index}${isOwned ? " (Owned)" : ""}${isSelected ? " (Selected)" : ""}`}
-                  />
-                );
-              })}
-            </div>
+          <div className="w-full aspect-square">
+            <WorldMap
+              selectedIndex={selectedIndex}
+              onSelectIndex={setSelectedIndex}
+              onHoverIndex={setHoveredIndex}
+              territories={allSlots}
+              ownedIndices={ownedSlotIndices}
+              territoryOwnerPfps={territoryOwnerPfps}
+            />
           </div>
 
-          <div className="mt-1 flex flex-col gap-1 pb-1">
+          <div className="flex flex-col gap-1 pb-1">
             <div className="grid grid-cols-2 gap-1">
               <Card className="border-zinc-800 bg-black">
                 <CardContent className="grid gap-0.5 p-1.5">
@@ -894,30 +922,13 @@ export default function HomePage() {
               </Card>
             </div>
 
-            <div className="flex gap-1 items-center">
-              <div className="grid grid-cols-6 gap-0.5">
-                {COLORS.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={cn(
-                      "w-4 h-4 rounded border transition-colors",
-                      selectedColor === color
-                        ? "border-cyan-400 ring-1 ring-cyan-400"
-                        : "border-zinc-700 hover:border-cyan-400"
-                    )}
-                    style={{backgroundColor: color}}
-                  />
-                ))}
-              </div>
-              <Button
-                className="flex-1 rounded-xl bg-cyan-500 hover:bg-cyan-600 py-1.5 text-xs font-bold text-black shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                onClick={handleGlaze}
-                disabled={isGlazeDisabled}
-              >
-                {buttonLabel}
-              </Button>
-            </div>
+            <Button
+              className="w-full rounded-xl bg-cyan-500 hover:bg-cyan-600 py-1.5 text-xs font-bold text-black shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={handleGlaze}
+              disabled={isGlazeDisabled}
+            >
+              {buttonLabel === "MINE" ? "CONQUER" : buttonLabel === "MINING…" ? "CONQUERING…" : buttonLabel}
+            </Button>
           </div>
         </div>
       </div>
