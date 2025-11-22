@@ -992,7 +992,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-2 gap-1">
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-1.5">
+                <CardContent className="grid gap-0.5 p-1">
                   <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING RATE
                   </div>
@@ -1006,7 +1006,7 @@ export default function HomePage() {
               </Card>
 
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-1.5">
+                <CardContent className="grid gap-0.5 p-1">
                   <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING PRICE
                   </div>

@@ -123,7 +123,7 @@ export function WorldMap({
               className={`aspect-square relative ${
                 isPriceJumping ? "animate-box-price-jump" : ""
               } ${isMultiplierChanging ? "animate-multiplier-change" : ""} ${
-                showPreview ? "ring-2 ring-white z-10" : ""
+                showPreview ? "ring-2 ring-white ring-inset z-10" : ""
               }`}
               style={{
                 backgroundColor: displayColor,
