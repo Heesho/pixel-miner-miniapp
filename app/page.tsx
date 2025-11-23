@@ -517,6 +517,10 @@ export default function HomePage() {
         throw new Error("Unable to determine wallet address.");
       }
 
+      if (selectedIndex === null) {
+        throw new Error("No territory selected.");
+      }
+
       // Fetch fresh slot data right before transaction to avoid stale price/epochId
       const freshSlotData = await readContract(wagmiConfig, {
         address: CONTRACT_ADDRESSES.multicall as Address,
