@@ -151,6 +151,7 @@ export function TerritoryMap({
   const [drawMetrics, setDrawMetrics] = useState<any>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastPinchDistanceRef = useRef<number | null>(null);
+  const startTouchPosRef = useRef<{ x: number; y: number } | null>(null);
 
   // Initialize map data
   useEffect(() => {
@@ -401,11 +402,42 @@ export function TerritoryMap({
     setIsDragging(true);
     setLastMouseX(x);
     setLastMouseY(y);
+    startTouchPosRef.current = { x, y };
   };
 
   const handleEnd = () => {
+    const wasDragging = isDragging;
     setIsDragging(false);
-    if (hoveredId) {
+
+    // Check if this was a tap (minimal movement) or a drag
+    const isTap = startTouchPosRef.current &&
+                  Math.abs(lastMouseX - startTouchPosRef.current.x) < 5 &&
+                  Math.abs(lastMouseY - startTouchPosRef.current.y) < 5;
+
+    startTouchPosRef.current = null;
+
+    // On tap, detect what's at the current position
+    if (isTap && drawMetrics) {
+      const { drawW, drawH, offsetX, offsetY } = drawMetrics;
+      const nx = (lastMouseX - offsetX) / drawW;
+      const ny = (lastMouseY - offsetY) / drawH;
+      const minDist = 0.02 / zoom;
+
+      if (nx > 0 && nx < 1 && ny > 0 && ny < 1) {
+        for (let d of dots) {
+          if (Math.abs(d.nx - nx) > minDist) continue;
+          const dist = Math.sqrt((d.nx - nx) ** 2 + (d.ny - ny) ** 2);
+          if (dist < minDist) {
+            const index = Array.from(territories.keys()).indexOf(d.regionId);
+            onSelectIndex(index);
+            return;
+          }
+        }
+      }
+    }
+
+    // Fallback: Select on hover if we were dragging
+    if (hoveredId && wasDragging) {
       const index = Array.from(territories.keys()).indexOf(hoveredId);
       onSelectIndex(index);
     }
