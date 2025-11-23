@@ -428,6 +428,29 @@ export function TerritoryMap({
     };
   }, []);
 
+  // Aggressive touch event prevention at container level
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const preventTouch = (e: TouchEvent) => {
+      // Always prevent default on container to block pull-to-close
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    // Capture phase (before canvas handlers) with passive: false
+    container.addEventListener('touchstart', preventTouch, { passive: false, capture: true });
+    container.addEventListener('touchmove', preventTouch, { passive: false, capture: true });
+    container.addEventListener('touchend', preventTouch, { passive: false, capture: true });
+
+    return () => {
+      container.removeEventListener('touchstart', preventTouch);
+      container.removeEventListener('touchmove', preventTouch);
+      container.removeEventListener('touchend', preventTouch);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -436,6 +459,9 @@ export function TerritoryMap({
         touchAction: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
+        WebkitTouchCallout: 'none',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'auto',
       }}
     >
       <canvas

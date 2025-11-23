@@ -821,8 +821,6 @@ export default function HomePage() {
         position: 'fixed',
         width: '100%',
         height: '100%',
-        touchAction: 'none',
-        overscrollBehavior: 'none',
       }}
     >
       {/* Add to Farcaster Dialog - shows on first visit */}
@@ -833,8 +831,6 @@ export default function HomePage() {
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
-          touchAction: 'none',
-          overscrollBehavior: 'none',
         }}
       >
         <div className="flex flex-col gap-1">
@@ -991,8 +987,7 @@ export default function HomePage() {
             className="w-full aspect-[2/1]"
             style={{
               touchAction: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
+              overscrollBehavior: 'none',
             }}
           >
             <TerritoryMap

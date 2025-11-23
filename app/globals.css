@@ -15,15 +15,15 @@ body {
   position: fixed;
   width: 100%;
   height: 100%;
-  /* Prevent pull-to-refresh and overscroll */
-  overscroll-behavior: none;
+  /* Allow pull-to-close on non-map elements */
+  overscroll-behavior: auto;
   -webkit-overflow-scrolling: auto;
-  /* Prevent touch actions that would trigger native browser behaviors */
-  touch-action: none;
+  /* Allow vertical panning for pull-to-close gesture */
+  touch-action: pan-y;
   /* Prevent text selection on touch */
   -webkit-user-select: none;
   user-select: none;
-  /* Prevent iOS bounce/rubber-banding */
+  /* Prevent iOS bounce/rubber-banding on scrollable elements */
   -webkit-touch-callout: none;
 }
 
@@ -33,8 +33,10 @@ html {
   position: fixed;
   width: 100%;
   height: 100%;
-  overscroll-behavior: none;
-  touch-action: none;
+  /* Allow overscroll for pull-to-close */
+  overscroll-behavior: auto;
+  /* Allow vertical panning for pull-to-close gesture */
+  touch-action: pan-y;
 }
 
 @keyframes glow-pulse {
