@@ -428,29 +428,6 @@ export function TerritoryMap({
     };
   }, []);
 
-  // Aggressive touch event prevention at container level
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const preventTouch = (e: TouchEvent) => {
-      // Always prevent default on container to block pull-to-close
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    // Capture phase (before canvas handlers) with passive: false
-    container.addEventListener('touchstart', preventTouch, { passive: false, capture: true });
-    container.addEventListener('touchmove', preventTouch, { passive: false, capture: true });
-    container.addEventListener('touchend', preventTouch, { passive: false, capture: true });
-
-    return () => {
-      container.removeEventListener('touchstart', preventTouch);
-      container.removeEventListener('touchmove', preventTouch);
-      container.removeEventListener('touchend', preventTouch);
-    };
-  }, []);
-
   return (
     <div
       ref={containerRef}
@@ -482,9 +459,8 @@ export function TerritoryMap({
         onMouseUp={handleEnd}
         onMouseLeave={handleEnd}
         onTouchStart={(e) => {
-          // CRITICAL: Prevent all default touch behaviors
+          // Only prevent default, don't stop propagation
           e.preventDefault();
-          e.stopPropagation();
 
           if (e.touches.length === 2) {
             // Pinch zoom start
@@ -502,9 +478,8 @@ export function TerritoryMap({
           }
         }}
         onTouchMove={(e) => {
-          // CRITICAL: Prevent all default touch behaviors
+          // Only prevent default, don't stop propagation
           e.preventDefault();
-          e.stopPropagation();
 
           if (e.touches.length === 2) {
             // Pinch zoom
@@ -528,9 +503,8 @@ export function TerritoryMap({
           }
         }}
         onTouchEnd={(e) => {
-          // Prevent default to stop any lingering behaviors
+          // Only prevent default, don't stop propagation
           e.preventDefault();
-          e.stopPropagation();
 
           if (e.touches.length < 2) {
             lastPinchDistanceRef.current = null;
