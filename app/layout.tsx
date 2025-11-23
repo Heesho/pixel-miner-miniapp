@@ -24,6 +24,12 @@ const miniAppEmbed = {
 export const metadata: Metadata = {
   title: "Pixel Miner",
   description: "Mine pixels and earn rewards on Base blockchain.",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: "Pixel Miner - Mine Pixels on Base",
     description: "Command your pixel mining operation and compete with other miners to earn rewards.",

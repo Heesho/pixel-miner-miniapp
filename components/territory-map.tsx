@@ -428,11 +428,11 @@ export function TerritoryMap({
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-[#0a0a0a] overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full bg-[#0a0a0a] overflow-hidden" style={{ touchAction: 'none' }}>
       <canvas
         ref={canvasRef}
         className="cursor-grab active:cursor-grabbing"
-        style={{ imageRendering: 'pixelated' }}
+        style={{ imageRendering: 'pixelated', touchAction: 'none' }}
         onMouseDown={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           handleStart(e.clientX - rect.left, e.clientY - rect.top);
