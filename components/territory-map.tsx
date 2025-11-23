@@ -150,6 +150,7 @@ export function TerritoryMap({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [drawMetrics, setDrawMetrics] = useState<any>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const lastPinchDistanceRef = useRef<number | null>(null);
 
   // Initialize map data
   useEffect(() => {
@@ -428,11 +429,11 @@ export function TerritoryMap({
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-[#0a0a0a] overflow-hidden" style={{ touchAction: 'none' }}>
+    <div ref={containerRef} className="relative w-full h-full bg-[#0a0a0a] overflow-hidden">
       <canvas
         ref={canvasRef}
         className="cursor-grab active:cursor-grabbing"
-        style={{ imageRendering: 'pixelated', touchAction: 'none' }}
+        style={{ imageRendering: 'pixelated' }}
         onMouseDown={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           handleStart(e.clientX - rect.left, e.clientY - rect.top);
@@ -444,16 +445,53 @@ export function TerritoryMap({
         onMouseUp={handleEnd}
         onMouseLeave={handleEnd}
         onTouchStart={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const touch = e.touches[0];
-          handleStart(touch.clientX - rect.left, touch.clientY - rect.top);
+          if (e.touches.length === 2) {
+            // Pinch zoom start
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const distance = Math.sqrt(
+              Math.pow(touch2.clientX - touch1.clientX, 2) +
+              Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
+            lastPinchDistanceRef.current = distance;
+          } else if (e.touches.length === 1) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const touch = e.touches[0];
+            handleStart(touch.clientX - rect.left, touch.clientY - rect.top);
+          }
         }}
         onTouchMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const touch = e.touches[0];
-          handleMove(touch.clientX - rect.left, touch.clientY - rect.top);
+          if (e.touches.length === 2) {
+            // Pinch zoom
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const distance = Math.sqrt(
+              Math.pow(touch2.clientX - touch1.clientX, 2) +
+              Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
+
+            if (lastPinchDistanceRef.current) {
+              const delta = distance - lastPinchDistanceRef.current;
+              setZoom(prev => Math.max(1, Math.min(5, prev + delta * 0.01)));
+            }
+
+            lastPinchDistanceRef.current = distance;
+          } else if (e.touches.length === 1) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const touch = e.touches[0];
+            handleMove(touch.clientX - rect.left, touch.clientY - rect.top);
+          }
         }}
-        onTouchEnd={handleEnd}
+        onTouchEnd={(e) => {
+          if (e.touches.length < 2) {
+            lastPinchDistanceRef.current = null;
+          }
+          if (e.touches.length === 0) {
+            handleEnd();
+          }
+        }}
       />
 
       {/* Scanlines overlay */}

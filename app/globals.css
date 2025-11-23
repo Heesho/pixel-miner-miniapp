@@ -12,12 +12,6 @@ body {
   background-color: #000;
   color: #fff;
   overflow: hidden;
-  touch-action: pan-y pan-x;
-}
-
-/* Prevent pinch-to-zoom on the entire app */
-html {
-  touch-action: manipulation;
 }
 
 @keyframes glow-pulse {
