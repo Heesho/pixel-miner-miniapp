@@ -423,12 +423,12 @@ export default function BlazeryPage() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <Card className="border-white bg-black">
+            <Card className="border-[#39FF14] bg-black">
               <CardContent className="grid gap-1.5 p-2.5">
                 <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-400">
                   PAY
                 </div>
-                <div className="text-2xl font-semibold text-white">
+                <div className="text-2xl font-semibold text-[#39FF14]">
                   {auctionPriceDisplay} LP
                 </div>
                 <div className="text-xs text-gray-400">
@@ -466,7 +466,7 @@ export default function BlazeryPage() {
 
           <div className="mt-4 flex flex-col gap-2">
             <Button
-              className="w-full rounded-2xl bg-white py-3 text-base font-bold text-black shadow-lg transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-white/40"
+              className="w-full rounded-2xl bg-[#39FF14] py-3 text-base font-bold text-black shadow-lg transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-zinc-900 disabled:text-zinc-600"
               onClick={handleBlaze}
               disabled={isBlazeDisabled}
             >
@@ -487,7 +487,7 @@ export default function BlazeryPage() {
                 href="https://app.uniswap.org/explore/pools/base/0xD1DbB2E56533C55C3A637D13C53aeEf65c5D5703"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-white hover:text-gray-300 font-semibold transition-colors"
+                className="text-xs text-[#39FF14] hover:brightness-110 font-semibold transition-colors"
               >
                 Get LP →
               </a>

@@ -24,8 +24,7 @@ import { cn, getEthPrice } from "@/lib/utils";
 import { useAccountData } from "@/hooks/useAccountData";
 import { NavBar } from "@/components/nav-bar";
 import { AddToFarcasterDialog } from "@/components/add-to-farcaster-dialog";
-import { WorldMap } from "@/components/world-map";
-import { TilePlacer } from "@/components/tile-placer";
+import { TerritoryMap, RISK_REGIONS } from "@/components/territory-map";
 
 type MiniAppContext = {
   user?: {
@@ -156,10 +155,8 @@ export default function HomePage() {
   const [glazeResult, setGlazeResult] = useState<"success" | "failure" | null>(
     null,
   );
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [territoryOwnerPfps, setTerritoryOwnerPfps] = useState<Map<number, string>>(new Map());
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const glazeResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -273,12 +270,12 @@ export default function HomePage() {
     return rawMinerState as unknown as MinerState;
   }, [rawMinerState]);
 
-  // Fetch all slots (0-255) - 256 pixels in 16x16 grid
+  // Fetch all slots (0-82) - 83 territories
   const { data: rawAllSlots, refetch: refetchAllSlots } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall,
     abi: MULTICALL_ABI,
     functionName: "getSlots",
-    args: [BigInt(0), BigInt(255)],
+    args: [BigInt(0), BigInt(82)],
     chainId: base.id,
     query: {
       refetchInterval: 8_000, // Refresh every 8 seconds
@@ -346,39 +343,10 @@ export default function HomePage() {
     previousSlotsRef.current = allSlots;
   }, [allSlots]);
 
-  // Fetch profile pictures for territory owners
-  useEffect(() => {
-    const fetchPfps = async () => {
-      const newPfps = new Map<number, string>();
-
-      for (let i = 0; i < allSlots.length; i++) {
-        const slot = allSlots[i];
-        if (slot && slot.miner && slot.miner !== zeroAddress) {
-          try {
-            const res = await fetch(`/api/neynar/user?address=${encodeURIComponent(slot.miner)}`);
-            if (res.ok) {
-              const data = await res.json();
-              if (data.user?.pfpUrl) {
-                newPfps.set(i, data.user.pfpUrl);
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to fetch pfp for territory ${i}:`, error);
-          }
-        }
-      }
-
-      setTerritoryOwnerPfps(newPfps);
-    };
-
-    if (allSlots.length > 0) {
-      fetchPfps();
-    }
-  }, [allSlots]);
 
   // Get the selected slot from the allSlots array
   const slotState = useMemo(() => {
-    if (!allSlots || allSlots.length === 0) return undefined;
+    if (!allSlots || allSlots.length === 0 || selectedIndex === null) return undefined;
     return allSlots[selectedIndex];
   }, [allSlots, selectedIndex]);
 
@@ -393,6 +361,36 @@ export default function HomePage() {
     });
     return owned;
   }, [address, allSlots]);
+
+  // Build territories map with blockchain data
+  const territories = useMemo(() => {
+    const map = new Map();
+    RISK_REGIONS.forEach((region, index) => {
+      const slot = allSlots[index];
+      const hue = (index * 137.508) % 360;
+      const baseColor = `hsl(${hue}, 40%, 55%)`;
+
+      map.set(region.id, {
+        ...region,
+        baseColor,
+        owner: slot?.miner && slot.miner !== zeroAddress ? slot.miner : null,
+        price: slot?.price ? Number(slot.price) : Math.floor(Math.random() * 1000),
+        multiplier: slot?.multiplier ? Number(formatUnits(slot.multiplier, 18)) : (Math.random() * 5 + 1)
+      });
+    });
+    return map;
+  }, [allSlots]);
+
+  // Find which territories the current user owns (by territory ID, not index)
+  const ownedTerritories = useMemo(() => {
+    const owned = new Set<string>();
+    territories.forEach((territory, id) => {
+      if (address && territory.owner && territory.owner.toLowerCase() === address.toLowerCase()) {
+        owned.add(id);
+      }
+    });
+    return owned;
+  }, [address, territories]);
 
   const { data: accountData } = useAccountData(address);
 
@@ -502,7 +500,7 @@ export default function HomePage() {
   });
 
   const handleGlaze = useCallback(async () => {
-    if (!slotState || !selectedColor) return;
+    if (!slotState) return;
     resetGlazeResult();
     try {
       let targetAddress = address;
@@ -555,7 +553,7 @@ export default function HomePage() {
           epochId,
           deadline,
           maxPrice,
-          selectedColor,
+          "#39FF14", // Neon green for invasion theme
         ],
         value: price + entropyFee,
         chainId: base.id,
@@ -570,7 +568,6 @@ export default function HomePage() {
     connectAsync,
     selectedIndex,
     slotState,
-    selectedColor,
     primaryConnector,
     resetGlazeResult,
     resetWrite,
@@ -782,7 +779,7 @@ export default function HomePage() {
   }, [glazeResult, isConfirming, isWriting, slotState]);
 
   const isGlazeDisabled =
-    !slotState || !selectedColor || isWriting || isConfirming || glazeResult !== null;
+    !slotState || isWriting || isConfirming || glazeResult !== null;
 
   const handleViewKingGlazerProfile = useCallback(() => {
     const fid = neynarUser?.user?.fid;
@@ -857,7 +854,7 @@ export default function HomePage() {
             className={cn(
               "border-zinc-800 bg-black transition-shadow",
               occupantDisplay.isYou &&
-                "border-white shadow-[inset_0_0_24px_rgba(255,255,255,0.15)] animate-glow",
+                "border-[#39FF14] shadow-[inset_0_0_24px_rgba(57,255,20,0.25),0_0_20px_rgba(57,255,20,0.4)] animate-glow",
             )}
           >
             <CardContent className="flex items-center justify-between gap-2 p-2">
@@ -976,23 +973,21 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <div className="w-full aspect-square">
-            <WorldMap
+          <div className="w-full aspect-[2/1]">
+            <TerritoryMap
               selectedIndex={selectedIndex}
               onSelectIndex={setSelectedIndex}
               onHoverIndex={setHoveredIndex}
-              territories={allSlots}
-              ownedIndices={ownedSlotIndices}
-              territoryOwnerPfps={territoryOwnerPfps}
+              territories={territories}
+              ownedTerritories={ownedTerritories}
               animatingSlots={animatingSlots}
-              previewColor={selectedColor}
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-2 gap-1">
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-1">
+                <CardContent className="grid gap-0.5 p-2">
                   <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING RATE
                   </div>
@@ -1006,11 +1001,11 @@ export default function HomePage() {
               </Card>
 
               <Card className="border-zinc-800 bg-black">
-                <CardContent className="grid gap-0.5 p-1">
+                <CardContent className="grid gap-0.5 p-2">
                   <div className="text-[7px] font-bold uppercase tracking-[0.08em] text-gray-400">
                     MINING PRICE
                   </div>
-                  <div className="text-base font-semibold text-white">
+                  <div className="text-base font-semibold text-[#39FF14]">
                     {glazePriceDisplay}
                   </div>
                   <div className="text-[8px] text-gray-400">
@@ -1020,14 +1015,63 @@ export default function HomePage() {
               </Card>
             </div>
 
-            <TilePlacer
-              selectedColor={selectedColor}
-              onColorSelect={setSelectedColor}
-              onClearColor={() => setSelectedColor(null)}
-              onPlace={handleGlaze}
-              disabled={!slotState || isWriting || isConfirming || glazeResult !== null}
-              isPlacing={isWriting || isConfirming}
-            />
+            {/* Conquer Button */}
+            <button
+              className="w-full h-11 rounded-xl bg-[#39FF14] text-black text-lg font-black uppercase tracking-wider shadow-lg transition-all hover:brightness-110"
+              onClick={handleGlaze}
+              disabled={selectedIndex === null || !slotState || isWriting || isConfirming || glazeResult !== null}
+            >
+              {isWriting || isConfirming ? 'CONQUERING...' : 'CONQUER'}
+            </button>
+
+            {/* Your Stats Section */}
+            <div className="mt-3">
+              <h2 className="text-sm font-bold text-white mb-2">Your Stats</h2>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">ETH:</span>
+                  <span className="text-white font-semibold">Ξ{minerState ? formatEth(minerState.ethBalance, 4) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">WETH:</span>
+                  <span className="text-white font-semibold">Ξ{minerState && minerState.wethBalance !== undefined
+                    ? formatEth(minerState.wethBalance, 4)
+                    : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Spent:</span>
+                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplay.isYou
+                    ? formatEth(slotState.initPrice / 2n, 5)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Earned:</span>
+                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplay.isYou && slotState.price > slotState.initPrice
+                    ? formatEth((slotState.price * 80n) / 100n, 5)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Mined:</span>
+                  <span className="text-white font-semibold">▪{slotState && occupantDisplay.isYou && interpolatedMined !== null
+                    ? formatTokenAmount(interpolatedMined, DONUT_DECIMALS, 2)
+                    : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Rate:</span>
+                  <span className="text-white font-semibold">▪{slotState && occupantDisplay.isYou
+                    ? formatTokenAmount(slotState.pps, DONUT_DECIMALS, 4)
+                    : "0"}/s</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Pixel:</span>
+                  <span className="text-white font-semibold">▪{minerState ? formatTokenAmount(minerState.pixelBalance, DONUT_DECIMALS, 2) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Owned:</span>
+                  <span className="text-white font-semibold">{ownedSlotIndices.size}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

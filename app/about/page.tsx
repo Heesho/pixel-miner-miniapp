@@ -245,57 +245,8 @@ export default function AboutPage() {
               />
             </div>
 
-            {/* Your Stats Section */}
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">Your Stats</h2>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">ETH:</span>
-                  <span className="text-white font-semibold">Ξ{minerState ? formatEth(minerState.ethBalance, 4) : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">WETH:</span>
-                  <span className="text-white font-semibold">Ξ{minerState && minerState.wethBalance !== undefined
-                    ? formatEth(minerState.wethBalance, 4)
-                    : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Spent:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou
-                    ? formatEth(slotState.initPrice / 2n, 5)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Earned:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou && slotState.price > slotState.initPrice
-                    ? formatEth((slotState.price * 80n) / 100n, 5)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Mined:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou && interpolatedMined !== null
-                    ? formatTokenAmount(interpolatedMined, DONUT_DECIMALS, 2)
-                    : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Rate:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou
-                    ? formatTokenAmount(slotState.pps, DONUT_DECIMALS, 4)
-                    : "0"}/s</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Pixel:</span>
-                  <span className="text-white font-semibold">▪{minerState ? formatTokenAmount(minerState.pixelBalance, DONUT_DECIMALS, 2) : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Owned:</span>
-                  <span className="text-white font-semibold">{ownedSlotIndices.size}</span>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 What Is Pixel Miner
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -306,7 +257,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 How Mining Works
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -319,7 +270,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 Revenue Split
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -330,7 +281,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 Emission Schedule
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -341,7 +292,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 Proof of Just-In-Time Stake
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -353,7 +304,7 @@ export default function AboutPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 Treasury
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
@@ -363,7 +314,7 @@ export default function AboutPage() {
             </section>
 
             <section className="pb-4">
-              <h2 className="text-lg font-bold text-white mb-2">
+              <h2 className="text-lg font-bold text-[#39FF14] mb-2">
                 Builder Codes
               </h2>
               <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
