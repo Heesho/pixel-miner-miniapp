@@ -149,7 +149,7 @@ export function TerritoryMap({
   const [lastMouseY, setLastMouseY] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [drawMetrics, setDrawMetrics] = useState<any>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   // Initialize map data
   useEffect(() => {
