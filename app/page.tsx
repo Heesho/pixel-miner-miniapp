@@ -424,7 +424,6 @@ export default function HomePage() {
       );
       refetchMinerState();
       refetchAllSlots(); // Refresh the entire grid
-      setSelectedColor(null); // Clear color selection after placement
       const resetTimer = setTimeout(() => {
         resetWrite();
       }, 500);
