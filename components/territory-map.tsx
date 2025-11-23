@@ -429,11 +429,22 @@ export function TerritoryMap({
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-[#0a0a0a] overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full h-full bg-[#0a0a0a] overflow-hidden"
+      style={{
+        touchAction: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+      }}
+    >
       <canvas
         ref={canvasRef}
         className="cursor-grab active:cursor-grabbing"
-        style={{ imageRendering: 'pixelated' }}
+        style={{
+          imageRendering: 'pixelated',
+          touchAction: 'none',
+        }}
         onMouseDown={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           handleStart(e.clientX - rect.left, e.clientY - rect.top);
@@ -445,9 +456,12 @@ export function TerritoryMap({
         onMouseUp={handleEnd}
         onMouseLeave={handleEnd}
         onTouchStart={(e) => {
+          // CRITICAL: Prevent all default touch behaviors
+          e.preventDefault();
+          e.stopPropagation();
+
           if (e.touches.length === 2) {
             // Pinch zoom start
-            e.preventDefault();
             const touch1 = e.touches[0];
             const touch2 = e.touches[1];
             const distance = Math.sqrt(
@@ -462,9 +476,12 @@ export function TerritoryMap({
           }
         }}
         onTouchMove={(e) => {
+          // CRITICAL: Prevent all default touch behaviors
+          e.preventDefault();
+          e.stopPropagation();
+
           if (e.touches.length === 2) {
             // Pinch zoom
-            e.preventDefault();
             const touch1 = e.touches[0];
             const touch2 = e.touches[1];
             const distance = Math.sqrt(
@@ -485,6 +502,10 @@ export function TerritoryMap({
           }
         }}
         onTouchEnd={(e) => {
+          // Prevent default to stop any lingering behaviors
+          e.preventDefault();
+          e.stopPropagation();
+
           if (e.touches.length < 2) {
             lastPinchDistanceRef.current = null;
           }

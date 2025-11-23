@@ -815,7 +815,16 @@ export default function HomePage() {
   const userAvatarUrl = context?.user?.pfpUrl ?? connectedUserProfile?.user?.pfpUrl ?? null;
 
   return (
-    <main className="flex h-screen w-screen justify-center overflow-hidden bg-black font-mono text-white">
+    <main
+      className="flex h-screen w-screen justify-center overflow-hidden bg-black font-mono text-white"
+      style={{
+        position: 'fixed',
+        width: '100%',
+        height: '100%',
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+      }}
+    >
       {/* Add to Farcaster Dialog - shows on first visit */}
       <AddToFarcasterDialog showOnFirstVisit={true} />
 
@@ -824,6 +833,8 @@ export default function HomePage() {
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
+          touchAction: 'none',
+          overscrollBehavior: 'none',
         }}
       >
         <div className="flex flex-col gap-1">
@@ -976,7 +987,14 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <div className="w-full aspect-[2/1]">
+          <div
+            className="w-full aspect-[2/1]"
+            style={{
+              touchAction: 'none',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+            }}
+          >
             <TerritoryMap
               selectedIndex={selectedIndex}
               onSelectIndex={setSelectedIndex}
