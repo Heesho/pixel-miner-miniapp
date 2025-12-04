@@ -98,7 +98,7 @@ export function WorldMap({
           const hasOwner = territory && territory.miner && territory.miner !== zeroAddress;
 
           // Get the base color from contract
-          let bgColor = "#1a1a1a";
+          let bgColor = "#000000";
           if (hasOwner && territory.uri && /^#[0-9A-F]{6}$/i.test(territory.uri)) {
             bgColor = territory.uri;
           }
