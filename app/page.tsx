@@ -909,7 +909,7 @@ export default function HomePage() {
                   {address ? initialsFrom(userDisplayName) : "..."}
                 </AvatarFallback>
               </Avatar>
-              <div className="leading-tight text-right">
+              <div className="leading-tight">
                 <div className="text-base font-bold text-white">{userDisplayName}</div>
                 {userHandle ? (
                   <div className="text-[10px] text-zinc-400">{userHandle}</div>

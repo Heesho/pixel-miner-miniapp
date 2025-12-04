@@ -81,15 +81,15 @@ export function WorldMap({
     const data = new Map<number, { distance: number; delay: number }>();
     PIXELS.forEach((pixel) => {
       const distance = getDistance(pixel.id, ripple.sourceIndex);
-      // 40ms delay per distance unit, max distance ~21 for 16x16 grid
-      const delay = distance * 40;
+      // 60ms delay per distance unit, max distance ~21 for 16x16 grid
+      const delay = distance * 60;
       data.set(pixel.id, { distance, delay });
     });
     return data;
   }, [ripple]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-zinc-950">
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
       <div className="w-full h-full grid grid-cols-16 grid-rows-16">
         {PIXELS.map((pixel) => {
           const territory = territories[pixel.id];
@@ -137,9 +137,6 @@ export function WorldMap({
               onClick={() => handleClick(pixel.id)}
               title={`Pixel #${pixel.id}`}
             >
-              {isOwned && !showPreview && (
-                <div className="absolute inset-0 bg-white/10" />
-              )}
               {isSelected && !previewColor && (
                 <>
                   <div className="absolute top-0 left-0 w-[25%] h-[25%] border-t-2 border-l-2 border-white" />
