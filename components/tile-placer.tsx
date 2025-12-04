@@ -51,34 +51,36 @@ export function TilePlacer({
     }
   };
 
-  // Default state: Single button
+  // Fixed height for both states to prevent layout shift
+  const containerHeight = "h-14";
+
+  // Default state: Single button - bold, game-like
   if (!isExpanded) {
     return (
       <button
-        className="w-full h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-bold text-white shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40 flex items-center justify-center"
+        className={`w-full ${containerHeight} bg-zinc-950 hover:bg-zinc-900 text-lg font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center`}
         onClick={handleExpand}
         disabled={disabled}
       >
-        {isPlacing ? "PLACING..." : "PLACE A TILE"}
+        {isPlacing ? "Placing..." : "Place a Tile"}
       </button>
     );
   }
 
   // Expanded state: Color picker + X + Checkmark
   return (
-    <div className="flex gap-1 items-stretch h-11">
-      {/* Color Picker - 2 rows of colors */}
-      <div className="flex-1 overflow-hidden flex flex-col gap-[1px] bg-black">
-        {/* Split colors into 2 rows of 12 */}
-        <div className="flex flex-1 gap-[1px]">
+    <div className={`flex items-stretch ${containerHeight}`}>
+      {/* Color Picker - 2 rows of colors, no gaps */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex flex-1">
           {COLOR_PALETTE.slice(0, 12).map((color) => (
             <button
               key={color}
               className={cn(
                 "flex-1 transition-all",
                 selectedColor === color
-                  ? "ring-2 ring-white ring-inset"
-                  : "hover:opacity-80"
+                  ? "ring-2 ring-white ring-inset scale-110 z-10"
+                  : "hover:scale-105"
               )}
               style={{ backgroundColor: color }}
               onClick={() => onColorSelect(color)}
@@ -86,15 +88,15 @@ export function TilePlacer({
             />
           ))}
         </div>
-        <div className="flex flex-1 gap-[1px]">
+        <div className="flex flex-1">
           {COLOR_PALETTE.slice(12, 24).map((color) => (
             <button
               key={color}
               className={cn(
                 "flex-1 transition-all",
                 selectedColor === color
-                  ? "ring-2 ring-white ring-inset"
-                  : "hover:opacity-80"
+                  ? "ring-2 ring-white ring-inset scale-110 z-10"
+                  : "hover:scale-105"
               )}
               style={{ backgroundColor: color }}
               onClick={() => onColorSelect(color)}
@@ -106,24 +108,24 @@ export function TilePlacer({
 
       {/* Cancel Button */}
       <button
-        className="bg-zinc-800 hover:bg-zinc-700 rounded-xl w-11 flex items-center justify-center shadow-lg transition-colors flex-shrink-0"
+        className="bg-zinc-800 hover:bg-zinc-700 w-14 flex items-center justify-center transition-colors flex-shrink-0"
         onClick={handleCancel}
       >
-        <X className="w-5 h-5 text-white" />
+        <X className="w-6 h-6 text-white" />
       </button>
 
       {/* Confirm Button */}
       <button
         className={cn(
-          "rounded-xl w-11 flex items-center justify-center shadow-lg transition-colors flex-shrink-0",
+          "w-14 flex items-center justify-center transition-colors flex-shrink-0",
           selectedColor
-            ? "bg-zinc-800 hover:bg-zinc-700"
+            ? "bg-emerald-600 hover:bg-emerald-500"
             : "bg-zinc-900 cursor-not-allowed opacity-40"
         )}
         onClick={handleConfirm}
         disabled={!selectedColor}
       >
-        <Check className="w-5 h-5 text-white" />
+        <Check className="w-6 h-6 text-white" />
       </button>
     </div>
   );

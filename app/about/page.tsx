@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { sdk } from "@farcaster/miniapp-sdk";
 import { useAccount, useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NavBar } from "@/components/nav-bar";
 import { AddToFarcasterButton } from "@/components/add-to-farcaster-button";
 import { DuneDashboardButton } from "@/components/dune-dashboard-button";
+import { CoreIcon } from "@/components/core-icon";
 import { CONTRACT_ADDRESSES, MULTICALL_ABI } from "@/lib/contracts";
 
 type MiniAppContext = {
@@ -21,9 +23,9 @@ type MiniAppContext = {
 };
 
 type MinerState = {
-  pps: bigint;
-  pixelPrice: bigint;
-  pixelBalance: bigint;
+  ups: bigint;
+  unitPrice: bigint;
+  unitBalance: bigint;
   ethBalance: bigint;
   wethBalance: bigint;
 };
@@ -33,14 +35,15 @@ type SlotState = {
   initPrice: bigint;
   startTime: bigint;
   price: bigint;
+  ups: bigint;
   multiplier: bigint;
-  pps: bigint;
+  multiplierTime: bigint;
   mined: bigint;
   miner: Address;
-  color: string;
+  uri: string;
 };
 
-const DONUT_DECIMALS = 18;
+const CORE_DECIMALS = 18;
 
 const initialsFrom = (label?: string) => {
   if (!label) return "";
@@ -152,10 +155,10 @@ export default function AboutPage() {
     }
     setInterpolatedMined(slotState.mined);
     const interval = setInterval(() => {
-      if (slotState.pps > 0n) {
+      if (slotState.ups > 0n) {
         setInterpolatedMined((prev) => {
           if (!prev) return slotState.mined;
-          return prev + slotState.pps;
+          return prev + slotState.ups;
         });
       }
     }, 1_000);
@@ -192,187 +195,230 @@ export default function AboutPage() {
     return () => clearTimeout(timeout);
   }, []);
 
+  // Fetch Neynar profile for the connected user
+  const { data: connectedUserProfile } = useQuery<{
+    user: {
+      fid: number | null;
+      username: string | null;
+      displayName: string | null;
+      pfpUrl: string | null;
+    } | null;
+  }>({
+    queryKey: ["neynar-connected-user", address],
+    queryFn: async () => {
+      if (!address) return { user: null };
+      const res = await fetch(
+        `/api/neynar/user?address=${encodeURIComponent(address)}`,
+      );
+      if (!res.ok) {
+        return { user: null };
+      }
+      return (await res.json()) as {
+        user: {
+          fid: number | null;
+          username: string | null;
+          displayName: string | null;
+          pfpUrl: string | null;
+        } | null;
+      };
+    },
+    enabled: !!address,
+    refetchOnWindowFocus: false,
+  });
+
   const userDisplayName =
-    context?.user?.displayName ?? context?.user?.username ?? "Farcaster user";
+    context?.user?.displayName ??
+    context?.user?.username ??
+    connectedUserProfile?.user?.displayName ??
+    connectedUserProfile?.user?.username ??
+    (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "User");
   const userHandle = context?.user?.username
     ? `@${context.user.username}`
-    : context?.user?.fid
-      ? `fid ${context.user.fid}`
-      : "";
-  const userAvatarUrl = context?.user?.pfpUrl ?? null;
+    : connectedUserProfile?.user?.username
+      ? `@${connectedUserProfile.user.username}`
+      : context?.user?.fid
+        ? `fid ${context.user.fid}`
+        : connectedUserProfile?.user?.fid
+          ? `fid ${connectedUserProfile.user.fid}`
+          : "";
+  const userAvatarUrl = context?.user?.pfpUrl ?? connectedUserProfile?.user?.pfpUrl ?? null;
 
   return (
-    <main className="flex h-screen w-screen justify-center overflow-hidden bg-black font-mono text-white">
+    <main className="flex h-screen w-screen justify-center overflow-hidden bg-zinc-950 text-white">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-black px-2 pb-4 shadow-inner"
+        className="relative flex h-full w-full max-w-[520px] flex-col overflow-hidden"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="sticky top-0 z-10 bg-black pb-2 flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-wide">ABOUT</h1>
-            {context?.user ? (
-              <div className="flex items-center gap-2 rounded-full bg-black px-3 py-1">
-                <Avatar className="h-8 w-8 border border-zinc-800">
-                  <AvatarImage
-                    src={userAvatarUrl || undefined}
-                    alt={userDisplayName}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-zinc-800 text-white">
-                    {initialsFrom(userDisplayName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="leading-tight text-left">
-                  <div className="text-sm font-bold">{userDisplayName}</div>
-                  {userHandle ? (
-                    <div className="text-xs text-gray-400">{userHandle}</div>
-                  ) : null}
-                </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2 bg-zinc-950">
+          <h1 className="text-2xl font-bold tracking-wide">About</h1>
+          {(context?.user || connectedUserProfile?.user || address) ? (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={userAvatarUrl || undefined}
+                  alt={userDisplayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-zinc-700 text-white text-xs font-bold">
+                  {initialsFrom(userDisplayName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="leading-tight text-right">
+                <div className="text-base font-bold text-white">{userDisplayName}</div>
+                {userHandle ? (
+                  <div className="text-xs text-zinc-400">{userHandle}</div>
+                ) : null}
               </div>
-            ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          {/* Buttons */}
+          <div className="flex">
+            <div className="flex-1">
+              <AddToFarcasterButton variant="default" />
+            </div>
+            <div className="flex-1">
+              <DuneDashboardButton variant="default" />
+            </div>
           </div>
 
-          <div className="space-y-6 px-2 overflow-y-auto scrollbar-hide flex-1">
-            <div className="grid grid-cols-2 gap-2">
-              <AddToFarcasterButton
-                variant="default"
-              />
-              <DuneDashboardButton
-                variant="default"
-              />
-            </div>
-
-            {/* Your Stats Section */}
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">Your Stats</h2>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">ETH:</span>
-                  <span className="text-white font-semibold">Ξ{minerState ? formatEth(minerState.ethBalance, 4) : "—"}</span>
+          {/* Your Stats Section */}
+          <section className="bg-zinc-800 px-4 py-3">
+              <h2 className="text-sm font-bold text-white mb-2">Your Stats</h2>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-400">CORE</span>
+                  <span className="text-white font-bold flex items-center gap-1"><CoreIcon size={10} />{minerState ? formatTokenAmount(minerState.unitBalance, CORE_DECIMALS, 2) : "—"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-400">Mined</span>
+                  <span className="text-white font-bold flex items-center gap-1"><CoreIcon size={10} />{slotState && occupantDisplayIsYou && interpolatedMined !== null
+                    ? formatTokenAmount(interpolatedMined, CORE_DECIMALS, 2)
+                    : "0"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">WETH:</span>
-                  <span className="text-white font-semibold">Ξ{minerState && minerState.wethBalance !== undefined
-                    ? formatEth(minerState.wethBalance, 4)
-                    : "—"}</span>
+                  <span className="text-zinc-400">ETH</span>
+                  <span className="text-white font-bold">Ξ{minerState ? formatEth(minerState.ethBalance, 4) : "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Spent:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou
+                  <span className="text-zinc-400">Spent</span>
+                  <span className="text-white font-bold">Ξ{slotState && occupantDisplayIsYou
                     ? formatEth(slotState.initPrice / 2n, 5)
                     : "0"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Earned:</span>
-                  <span className="text-white font-semibold">Ξ{slotState && occupantDisplayIsYou && slotState.price > slotState.initPrice
+                  <span className="text-zinc-400">WETH</span>
+                  <span className="text-white font-bold">Ξ{minerState && minerState.wethBalance !== undefined
+                    ? formatEth(minerState.wethBalance, 4)
+                    : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Earned</span>
+                  <span className="text-white font-bold">Ξ{slotState && occupantDisplayIsYou && slotState.price > slotState.initPrice
                     ? formatEth((slotState.price * 80n) / 100n, 5)
                     : "0"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Mined:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou && interpolatedMined !== null
-                    ? formatTokenAmount(interpolatedMined, DONUT_DECIMALS, 2)
-                    : "0"}</span>
+                  <span className="text-zinc-400">Owned</span>
+                  <span className="text-white font-bold">{ownedSlotIndices.size}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Rate:</span>
-                  <span className="text-white font-semibold">▪{slotState && occupantDisplayIsYou
-                    ? formatTokenAmount(slotState.pps, DONUT_DECIMALS, 4)
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-400">Rate</span>
+                  <span className="text-white font-bold flex items-center gap-1"><CoreIcon size={10} />{slotState && occupantDisplayIsYou
+                    ? formatTokenAmount(slotState.ups, CORE_DECIMALS, 4)
                     : "0"}/s</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Pixel:</span>
-                  <span className="text-white font-semibold">▪{minerState ? formatTokenAmount(minerState.pixelBalance, DONUT_DECIMALS, 2) : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Owned:</span>
-                  <span className="text-white font-semibold">{ownedSlotIndices.size}</span>
-                </div>
               </div>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                What Is Pixel Miner
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
+          <section className="bg-zinc-700 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              What Is Pixel Miner
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
                 <li>Pixel Miner is a competitive mining game on Base</li>
                 <li>Mine pixels through a continuous Dutch auction instead of proof-of-work or staking</li>
                 <li>Auction revenue increases liquidity and scarcity</li>
               </ul>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                How Mining Works
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
+          <section className="bg-zinc-800 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              How Mining Works
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
                 <li>Only one active miner at a time controls the mining operation</li>
                 <li>The right to mine is bought with ETH through a continuous Dutch auction:</li>
-                <li className="pl-6 list-none">- Price doubles after each purchase</li>
-                <li className="pl-6 list-none">- Then decays to 0 over one hour</li>
-                <li className="pl-6 list-none">- Anyone can purchase control of mining at the current price</li>
+                <li className="pl-4 list-none">- Price doubles after each purchase</li>
+                <li className="pl-4 list-none">- Then decays to 0 over one hour</li>
+                <li className="pl-4 list-none">- Anyone can purchase control of mining at the current price</li>
               </ul>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                Revenue Split
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
+          <section className="bg-zinc-700 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              Revenue Split
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
                 <li>80% → previous miner</li>
                 <li>15% → treasury</li>
                 <li>5% → provider (frontend host)</li>
               </ul>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                Emission Schedule
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
-                <li>Starts at 4 PIXEL / sec</li>
+          <section className="bg-zinc-800 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              Emission Schedule
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
+                <li>Starts at 2 CORE / sec</li>
                 <li>Halving every 30 days</li>
-                <li>Tail emission: 0.01 PIXEL / sec (forever)</li>
+                <li>Tail emission: 0.01 CORE / sec (forever)</li>
               </ul>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                Proof of Just-In-Time Stake
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
+          <section className="bg-zinc-700 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              Proof of Just-In-Time Stake
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
                 <li>ETH is "staked" only while controlling mining</li>
                 <li>Profit if the next purchase pays more</li>
                 <li>Lose if it pays less</li>
-                <li>Earn PIXEL the entire time you hold control</li>
+                <li>Earn CORE the entire time you hold control</li>
               </ul>
-            </section>
+          </section>
 
-            <section>
-              <h2 className="text-lg font-bold text-white mb-2">
-                Treasury
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
-                <li>Treasury ETH is used to buy and burn PIXEL-WETH LP</li>
-                <li>Once sufficient liquidity is established, the treasury can be upgraded to buy and burn PIXEL directly, or governance can decide to acquire other assets or reinvest the treasury</li>
+          <section className="bg-zinc-800 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              Treasury
+            </h2>
+              <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
+                <li>Treasury ETH is used to buy and burn CORE-WETH LP</li>
+                <li>Once sufficient liquidity is established, the treasury can be upgraded to buy and burn CORE directly, or governance can decide to acquire other assets or reinvest the treasury</li>
               </ul>
-            </section>
+          </section>
 
-            <section className="pb-4">
-              <h2 className="text-lg font-bold text-white mb-2">
-                Builder Codes
-              </h2>
-              <ul className="space-y-1 text-sm text-gray-300 list-disc list-inside">
-                <li>Anyone can host their own mining frontend by deploying a client</li>
-                <li>Add your builder code to earn 5% of all purchases made through your frontend</li>
-                <li>Compete to become the top mining provider on Base</li>
-              </ul>
-            </section>
-          </div>
+          <section className="bg-zinc-700 px-4 py-3">
+            <h2 className="text-sm font-bold text-white mb-2">
+              Builder Codes
+            </h2>
+            <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
+              <li>Anyone can host their own mining frontend by deploying a client</li>
+              <li>Add your builder code to earn 5% of all purchases made through your frontend</li>
+              <li>Compete to become the top mining provider on Base</li>
+            </ul>
+          </section>
+
+          {/* Nav spacer */}
+          <div className="h-14 bg-zinc-950 flex-shrink-0" />
         </div>
       </div>
       <NavBar />

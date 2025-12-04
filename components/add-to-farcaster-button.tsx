@@ -105,23 +105,20 @@ export function AddToFarcasterButton({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <Button
+    <div className="flex flex-col">
+      <button
         onClick={handleAddToFarcaster}
         disabled={status === "adding" || status === "success"}
-        variant={variant}
-        size={size}
         className={cn(
-          "gap-2 transition-all",
-          status === "success" && "bg-green-600 hover:bg-green-600",
-          status === "error" && "bg-red-600 hover:bg-red-600",
+          "w-full h-12 flex items-center justify-center gap-2 text-sm font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+          status === "success" ? "bg-emerald-600" : status === "error" ? "bg-red-600" : "bg-zinc-900 hover:bg-zinc-800",
           className
         )}
       >
         {buttonContent()}
-      </Button>
+      </button>
       {status === "error" && errorMessage && (
-        <p className="text-xs text-red-400 text-center">{errorMessage}</p>
+        <p className="text-xs text-red-400 text-center px-2 py-1 bg-zinc-900">{errorMessage}</p>
       )}
     </div>
   );

@@ -20,14 +20,15 @@ export function DuneDashboardButton({
   };
 
   return (
-    <Button
+    <button
       onClick={handleOpenDune}
-      variant={variant}
-      size={size}
-      className={cn("gap-2 transition-all", className)}
+      className={cn(
+        "w-full h-12 flex items-center justify-center gap-2 text-sm font-bold text-white bg-zinc-700 hover:bg-zinc-600 transition-colors",
+        className
+      )}
     >
       <BarChart3 className="h-4 w-4" />
-      <span>Dune Dashboard</span>
-    </Button>
+      <span>Analytics</span>
+    </button>
   );
 }

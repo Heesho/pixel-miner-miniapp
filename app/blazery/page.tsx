@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { sdk } from "@farcaster/miniapp-sdk";
 import {
   useAccount,
@@ -379,141 +380,179 @@ export default function BlazeryPage() {
   const isBlazeDisabled =
     !auctionState || isWriting || isConfirming || blazeResult !== null || hasInsufficientLP;
 
+  // Fetch Neynar profile for the connected user
+  const { data: connectedUserProfile } = useQuery<{
+    user: {
+      fid: number | null;
+      username: string | null;
+      displayName: string | null;
+      pfpUrl: string | null;
+    } | null;
+  }>({
+    queryKey: ["neynar-connected-user", address],
+    queryFn: async () => {
+      if (!address) return { user: null };
+      const res = await fetch(
+        `/api/neynar/user?address=${encodeURIComponent(address)}`,
+      );
+      if (!res.ok) {
+        return { user: null };
+      }
+      return (await res.json()) as {
+        user: {
+          fid: number | null;
+          username: string | null;
+          displayName: string | null;
+          pfpUrl: string | null;
+        } | null;
+      };
+    },
+    enabled: !!address,
+    refetchOnWindowFocus: false,
+  });
+
   const userDisplayName =
-    context?.user?.displayName ?? context?.user?.username ?? "Farcaster user";
+    context?.user?.displayName ??
+    context?.user?.username ??
+    connectedUserProfile?.user?.displayName ??
+    connectedUserProfile?.user?.username ??
+    (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "User");
   const userHandle = context?.user?.username
     ? `@${context.user.username}`
-    : context?.user?.fid
-      ? `fid ${context.user.fid}`
-      : "";
-  const userAvatarUrl = context?.user?.pfpUrl ?? null;
+    : connectedUserProfile?.user?.username
+      ? `@${connectedUserProfile.user.username}`
+      : context?.user?.fid
+        ? `fid ${context.user.fid}`
+        : connectedUserProfile?.user?.fid
+          ? `fid ${connectedUserProfile.user.fid}`
+          : "";
+  const userAvatarUrl = context?.user?.pfpUrl ?? connectedUserProfile?.user?.pfpUrl ?? null;
 
   return (
-    <main className="flex h-screen w-screen justify-center overflow-hidden bg-black font-mono text-white">
+    <main className="flex h-screen w-screen justify-center overflow-hidden bg-zinc-950 text-white">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-black px-2 pb-4 shadow-inner"
+        className="relative flex h-full w-full max-w-[520px] flex-col overflow-hidden"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-wide">BLAZERY</h1>
-            {context?.user ? (
-              <div className="flex items-center gap-2 rounded-full bg-black px-3 py-1">
-                <Avatar className="h-8 w-8 border border-zinc-800">
-                  <AvatarImage
-                    src={userAvatarUrl || undefined}
-                    alt={userDisplayName}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-zinc-800 text-white">
-                    {initialsFrom(userDisplayName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="leading-tight text-left">
-                  <div className="text-sm font-bold">{userDisplayName}</div>
-                  {userHandle ? (
-                    <div className="text-xs text-gray-400">{userHandle}</div>
-                  ) : null}
-                </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2 bg-zinc-950">
+          <h1 className="text-2xl font-bold tracking-wide">Blazery</h1>
+          {(context?.user || connectedUserProfile?.user || address) ? (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={userAvatarUrl || undefined}
+                  alt={userDisplayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-zinc-700 text-white text-xs font-bold">
+                  {initialsFrom(userDisplayName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="leading-tight text-right">
+                <div className="text-base font-bold text-white">{userDisplayName}</div>
+                {userHandle ? (
+                  <div className="text-xs text-zinc-400">{userHandle}</div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
+        </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <Card className="border-white bg-black">
-              <CardContent className="grid gap-1.5 p-2.5">
-                <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                  PAY
-                </div>
-                <div className="text-2xl font-semibold text-white">
-                  {auctionPriceDisplay} LP
-                </div>
-                <div className="text-xs text-gray-400">
-                  $
-                  {auctionState
-                    ? (
-                        Number(formatEther(auctionState.price)) *
-                        Number(formatEther(auctionState.paymentTokenPrice)) *
-                        ethUsdPrice
-                      ).toFixed(2)
-                    : "0.00"}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-zinc-800 bg-black">
-              <CardContent className="grid gap-1.5 p-2.5">
-                <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-400">
-                  GET
-                </div>
-                <div className="text-2xl font-semibold text-white">
-                  Ξ{claimableDisplay}
-                </div>
-                <div className="text-xs text-gray-400">
-                  $
-                  {auctionState
-                    ? (
-                        Number(formatEther(auctionState.wethAccumulated)) * ethUsdPrice
-                      ).toFixed(2)
-                    : "0.00"}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2">
-            <Button
-              className="w-full rounded-2xl bg-white py-3 text-base font-bold text-black shadow-lg transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-white/40"
-              onClick={handleBlaze}
-              disabled={isBlazeDisabled}
-            >
-              {buttonLabel}
-            </Button>
-
-            <div className="flex items-center justify-between px-1">
-              <div className="text-xs text-gray-400">
-                Available:{" "}
-                <span className="text-white font-semibold">
-                  {address && auctionState?.paymentTokenBalance
-                    ? formatEth(auctionState.paymentTokenBalance, 4)
-                    : "0"}
-                </span>{" "}
-                DONUT-ETH LP
+        {/* Content */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex">
+            <div className="flex-1 bg-zinc-800 px-4 py-3">
+              <div className="text-xs text-zinc-400 mb-1">
+                Pay
               </div>
-              <a
-                href="https://app.uniswap.org/explore/pools/base/0xD1DbB2E56533C55C3A637D13C53aeEf65c5D5703"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-white hover:text-gray-300 font-semibold transition-colors"
-              >
-                Get LP →
-              </a>
+              <div className="text-xl font-bold text-white">
+                {auctionPriceDisplay} LP
+              </div>
+              <div className="text-xs text-zinc-500">
+                $
+                {auctionState
+                  ? (
+                      Number(formatEther(auctionState.price)) *
+                      Number(formatEther(auctionState.paymentTokenPrice)) *
+                      ethUsdPrice
+                    ).toFixed(2)
+                  : "0.00"}
+              </div>
             </div>
 
-            {/* Profit/Loss Warning Message */}
-            {blazeProfitLoss && (
-              <div className={cn(
-                "text-center text-sm font-semibold px-2 py-1.5 rounded",
-                blazeProfitLoss.isProfitable ? "text-green-400" : "text-red-400"
-              )}>
-                {blazeProfitLoss.isProfitable ? (
-                  <>
-                    💰 Profitable blaze! You'll receive ${blazeProfitLoss.wethValueInUsd.toFixed(2)} in WETH for ${blazeProfitLoss.lpValueInUsd.toFixed(2)} in LP
-                    ({blazeProfitLoss.profitLoss >= 0 ? '+' : ''}${blazeProfitLoss.profitLoss.toFixed(2)})
-                  </>
-                ) : (
-                  <>
-                    ⚠️ Unprofitable blaze! You'll receive ${blazeProfitLoss.wethValueInUsd.toFixed(2)} in WETH for ${blazeProfitLoss.lpValueInUsd.toFixed(2)} in LP
-                    (${blazeProfitLoss.profitLoss.toFixed(2)})
-                  </>
-                )}
+            <div className="flex-1 bg-zinc-700 px-4 py-3">
+              <div className="text-xs text-zinc-400 mb-1">
+                Get
               </div>
-            )}
+              <div className="text-xl font-bold text-white">
+                Ξ{claimableDisplay}
+              </div>
+              <div className="text-xs text-zinc-500">
+                $
+                {auctionState
+                  ? (
+                      Number(formatEther(auctionState.wethAccumulated)) * ethUsdPrice
+                    ).toFixed(2)
+                  : "0.00"}
+              </div>
+            </div>
           </div>
+
+          <button
+            className="w-full h-14 bg-zinc-950 hover:bg-zinc-900 text-lg font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center"
+            onClick={handleBlaze}
+            disabled={isBlazeDisabled}
+          >
+            {buttonLabel}
+          </button>
+
+          <div className="flex items-center justify-between px-4 py-2 bg-zinc-800">
+            <div className="text-xs text-zinc-400">
+              Available:{" "}
+              <span className="text-white font-bold">
+                {address && auctionState?.paymentTokenBalance
+                  ? formatEth(auctionState.paymentTokenBalance, 4)
+                  : "0"}
+              </span>{" "}
+              DONUT-ETH LP
+            </div>
+            <a
+              href="https://app.uniswap.org/explore/pools/base/0xD1DbB2E56533C55C3A637D13C53aeEf65c5D5703"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-white hover:text-zinc-300 font-bold transition-colors"
+            >
+              Get LP →
+            </a>
+          </div>
+
+          {/* Profit/Loss Warning Message */}
+          {blazeProfitLoss && (
+            <div className={cn(
+              "text-center text-sm font-bold px-4 py-3 bg-zinc-700",
+              blazeProfitLoss.isProfitable ? "text-emerald-400" : "text-red-400"
+            )}>
+              {blazeProfitLoss.isProfitable ? (
+                <>
+                  Profitable! ${blazeProfitLoss.wethValueInUsd.toFixed(2)} WETH for ${blazeProfitLoss.lpValueInUsd.toFixed(2)} LP
+                  ({blazeProfitLoss.profitLoss >= 0 ? '+' : ''}${blazeProfitLoss.profitLoss.toFixed(2)})
+                </>
+              ) : (
+                <>
+                  Unprofitable: ${blazeProfitLoss.wethValueInUsd.toFixed(2)} WETH for ${blazeProfitLoss.lpValueInUsd.toFixed(2)} LP
+                  (${blazeProfitLoss.profitLoss.toFixed(2)})
+                </>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Nav spacer */}
+        <div className="h-14 bg-zinc-950 flex-shrink-0" />
       </div>
       <NavBar />
     </main>

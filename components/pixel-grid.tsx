@@ -9,11 +9,12 @@ type SlotState = {
   initPrice: bigint;
   startTime: bigint | number;
   price: bigint;
+  ups: bigint;
   multiplier: bigint;
-  pps: bigint;
+  multiplierTime: bigint;
   mined: bigint;
   miner: Address;
-  color: string;
+  uri: string;
 };
 
 type PixelGridProps = {
@@ -36,12 +37,12 @@ const formatEth = (value: bigint, maximumFractionDigits = 4) => {
 
 export function PixelGrid({ slots, selectedIndex, onSelectPixel, userAddress }: PixelGridProps) {
   const getPixelColor = useCallback((slot: SlotState) => {
-    if (!slot.color || slot.color.trim() === "") {
+    if (!slot.uri || slot.uri.trim() === "") {
       return "#1a1a1a"; // dark gray for unmined
     }
     // Validate hex color
-    if (/^#[0-9A-F]{6}$/i.test(slot.color)) {
-      return slot.color;
+    if (/^#[0-9A-F]{6}$/i.test(slot.uri)) {
+      return slot.uri;
     }
     return "#1a1a1a";
   }, []);
@@ -113,14 +114,14 @@ export function PixelGrid({ slots, selectedIndex, onSelectPixel, userAddress }: 
             <div>
               <div className="text-gray-400">Mined</div>
               <div className="font-semibold text-white">
-                {formatEth(slots[selectedIndex].mined, 2)} PIXEL
+                {formatEth(slots[selectedIndex].mined, 2)} CORE
               </div>
             </div>
 
             <div>
               <div className="text-gray-400">Rate</div>
               <div className="font-semibold text-white">
-                {formatEth(slots[selectedIndex].pps, 4)}/s
+                {formatEth(slots[selectedIndex].ups, 4)}/s
               </div>
             </div>
 

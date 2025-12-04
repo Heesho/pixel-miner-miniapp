@@ -10,20 +10,19 @@ export function NavBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-zinc-800"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-900"
       style={{
-        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
-        paddingTop: "8px",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
-      <div className="flex justify-around items-center max-w-[520px] mx-auto px-4">
+      <div className="flex items-stretch max-w-[520px] mx-auto">
         <Link
           href="/blazery"
           className={cn(
-            "flex items-center justify-center p-3 transition-colors",
+            "flex-1 flex items-center justify-center py-4 transition-colors",
             pathname === "/blazery"
-              ? "text-white"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-zinc-700 text-white"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
           )}
         >
           <Flame className="w-6 h-6" />
@@ -32,16 +31,16 @@ export function NavBar() {
         <Link
           href="/"
           className={cn(
-            "flex items-center justify-center p-3 transition-colors",
+            "flex-1 flex items-center justify-center py-4 transition-colors",
             pathname === "/"
-              ? "text-white"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-zinc-700 text-white"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
           )}
         >
           <div
             className={cn(
-              "w-7 h-7 rounded-full border-[5px]",
-              pathname === "/" ? "border-white" : "border-gray-400"
+              "w-6 h-6 border-4",
+              pathname === "/" ? "border-white" : "border-zinc-500"
             )}
           />
         </Link>
@@ -49,10 +48,10 @@ export function NavBar() {
         <Link
           href="/about"
           className={cn(
-            "flex items-center justify-center p-3 transition-colors",
+            "flex-1 flex items-center justify-center py-4 transition-colors",
             pathname === "/about"
-              ? "text-white"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-zinc-700 text-white"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
           )}
         >
           <Info className="w-6 h-6" />

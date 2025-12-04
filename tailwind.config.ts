@@ -8,7 +8,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'space-mono': ['var(--font-space-mono)', 'monospace'],
+      },
       gridTemplateColumns: {
+        '16': 'repeat(16, minmax(0, 1fr))',
+      },
+      gridTemplateRows: {
         '16': 'repeat(16, minmax(0, 1fr))',
       },
     },

@@ -1,6 +1,13 @@
 import "@/app/globals.css";
 import type { Metadata } from "next";
+import { Space_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+});
 
 const appDomain = "https://pixel-miner-miniapp.vercel.app";
 const heroImageUrl = `${appDomain}/media/hero.png`;
@@ -46,7 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${spaceMono.variable} font-space-mono`}>
         <Providers>{children}</Providers>
       </body>
     </html>

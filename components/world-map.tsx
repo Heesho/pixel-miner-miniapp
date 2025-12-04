@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { zeroAddress } from "viem";
-import { formatEther, formatUnits } from "viem";
 
 // Generate 256 pixels for 16x16 grid
 const PIXELS = Array.from({ length: 256 }, (_, i) => ({ id: i }));
+const GRID_SIZE = 16;
 
 type SlotState = {
   epochId: bigint;
   initPrice: bigint;
   startTime: bigint;
   price: bigint;
+  ups: bigint;
   multiplier: bigint;
-  pps: bigint;
   multiplierTime: bigint;
   mined: bigint;
   miner: string;
-  color: string;
+  uri: string;
 };
 
 type WorldMapProps = {
@@ -27,11 +27,26 @@ type WorldMapProps = {
   territories: Array<SlotState>;
   ownedIndices: Set<number>;
   territoryOwnerPfps: Map<number, string>;
-  animatingSlots?: {
-    priceJump: Set<number>;
-    multiplierChange: Set<number>;
-  };
+  ripple: { sourceIndex: number; color: string } | null;
   previewColor?: string | null;
+};
+
+// Convert pixel index to row, col
+const indexToCoords = (index: number) => ({
+  row: Math.floor(index / GRID_SIZE),
+  col: index % GRID_SIZE,
+});
+
+// Calculate distance between two pixels
+const getDistance = (index1: number, index2: number): number => {
+  const p1 = indexToCoords(index1);
+  const p2 = indexToCoords(index2);
+  // Use Chebyshev distance (max of row/col diff) for square ripple
+  // Or Euclidean for circular ripple
+  const rowDiff = Math.abs(p1.row - p2.row);
+  const colDiff = Math.abs(p1.col - p2.col);
+  // Chebyshev distance gives square ripple
+  return Math.max(rowDiff, colDiff);
 };
 
 export function WorldMap({
@@ -40,19 +55,10 @@ export function WorldMap({
   onHoverIndex,
   territories,
   ownedIndices,
-  animatingSlots,
+  ripple,
   previewColor,
 }: WorldMapProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [currentTime, setCurrentTime] = useState(Date.now());
-
-  // Update current time every second for countdown
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleMouseEnter = (id: number) => {
     setHoveredIndex(id);
@@ -68,66 +74,64 @@ export function WorldMap({
     onSelectIndex(id);
   };
 
-  const formatTimeRemaining = (multiplierTime: bigint): string => {
-    const targetTime = Number(multiplierTime) * 1000; // Convert to milliseconds
-    const remaining = Math.max(0, targetTime - currentTime);
-    const seconds = Math.floor(remaining / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
+  // Pre-calculate ripple data for all pixels
+  const rippleData = useMemo(() => {
+    if (!ripple) return null;
 
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  };
-
-  const formatMultiplier = (multiplier: bigint): string => {
-    const value = Number(formatUnits(multiplier, 18));
-    return `×${value.toFixed(1)}`;
-  };
-
-  const formatPrice = (price: bigint): string => {
-    const eth = parseFloat(formatEther(price));
-    if (eth === 0) return "Ξ0";
-    return `Ξ${eth.toFixed(5)}`;
-  };
+    const data = new Map<number, { distance: number; delay: number }>();
+    PIXELS.forEach((pixel) => {
+      const distance = getDistance(pixel.id, ripple.sourceIndex);
+      // 40ms delay per distance unit, max distance ~21 for 16x16 grid
+      const delay = distance * 40;
+      data.set(pixel.id, { distance, delay });
+    });
+    return data;
+  }, [ripple]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      <div className="w-full aspect-square grid grid-cols-16">
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-zinc-950">
+      <div className="w-full h-full grid grid-cols-16 grid-rows-16">
         {PIXELS.map((pixel) => {
           const territory = territories[pixel.id];
-          const isHovered = hoveredIndex === pixel.id;
           const isSelected = selectedIndex === pixel.id;
           const isOwned = ownedIndices.has(pixel.id);
           const hasOwner = territory && territory.miner && territory.miner !== zeroAddress;
-          const isPriceJumping = animatingSlots?.priceJump.has(pixel.id) ?? false;
-          const isMultiplierChanging = animatingSlots?.multiplierChange.has(pixel.id) ?? false;
 
-          // Use the pixel's color if it has been mined, otherwise dark gray
+          // Get the base color from contract
           let bgColor = "#1a1a1a";
-          if (hasOwner && territory.color && /^#[0-9A-F]{6}$/i.test(territory.color)) {
-            bgColor = territory.color;
+          if (hasOwner && territory.uri && /^#[0-9A-F]{6}$/i.test(territory.uri)) {
+            bgColor = territory.uri;
           }
 
           // Show preview color if this pixel is selected and a color is chosen
           const showPreview = isSelected && previewColor;
           const displayColor = showPreview ? previewColor : bgColor;
 
+          // Ripple animation
+          const isRippling = ripple && rippleData;
+          const isRippleSource = ripple && ripple.sourceIndex === pixel.id;
+          const pixelRippleData = rippleData?.get(pixel.id);
+          const rippleDelay = pixelRippleData?.delay ?? 0;
+
+          // Determine animation class
+          let animationClass = "";
+          if (isRippleSource) {
+            animationClass = "animate-ripple-source";
+          } else if (isRippling && pixelRippleData) {
+            animationClass = "animate-ripple";
+          }
+
           return (
             <button
-              key={pixel.id}
-              className={`aspect-square relative ${
-                isPriceJumping ? "animate-box-price-jump" : ""
-              } ${isMultiplierChanging ? "animate-multiplier-change" : ""} ${
+              key={isRippling ? `${pixel.id}-ripple-${ripple.sourceIndex}` : `${pixel.id}`}
+              className={`pixel-cell relative ${animationClass} ${
                 showPreview ? "ring-2 ring-white ring-inset z-10" : ""
               }`}
               style={{
-                backgroundColor: displayColor,
-              }}
+                "--final-color": displayColor,
+                "--ripple-color": ripple?.color ?? "#fff",
+                animationDelay: isRippling && !isRippleSource ? `${rippleDelay}ms` : "0ms",
+              } as React.CSSProperties}
               onMouseEnter={() => handleMouseEnter(pixel.id)}
               onMouseLeave={handleMouseLeave}
               onClick={() => handleClick(pixel.id)}
@@ -138,13 +142,9 @@ export function WorldMap({
               )}
               {isSelected && !previewColor && (
                 <>
-                  {/* Top-left corner */}
                   <div className="absolute top-0 left-0 w-[25%] h-[25%] border-t-2 border-l-2 border-white" />
-                  {/* Top-right corner */}
                   <div className="absolute top-0 right-0 w-[25%] h-[25%] border-t-2 border-r-2 border-white" />
-                  {/* Bottom-left corner */}
                   <div className="absolute bottom-0 left-0 w-[25%] h-[25%] border-b-2 border-l-2 border-white" />
-                  {/* Bottom-right corner */}
                   <div className="absolute bottom-0 right-0 w-[25%] h-[25%] border-b-2 border-r-2 border-white" />
                 </>
               )}

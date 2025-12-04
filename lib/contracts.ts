@@ -1,7 +1,7 @@
 export const CONTRACT_ADDRESSES = {
-  pixel: "0xA5db7214F7cc61c8b01AE05bD0042F50BEb46647",
-  miner: "0xfd8653E380b4028cA9bf2e03b3E4f4B37cC0B385",
-  multicall: "0xF51A1059F155930305e9DddA4120B9f46BafB92E",
+  unit: "0x9AA530224eA747388e8d35bf6904C1a81004244c",
+  miner: "0xcD56904138618a457e6709A7CB5F11C7D1f49A94",
+  multicall: "0x5833A6543e4455079F098DE7746518A33Ab1Addf",
   weth: "0x4200000000000000000000000000000000000006",
   provider: "0xba366c82815983ff130c23ced78bd95e1f2c18ea",
 } as const;
@@ -36,7 +36,7 @@ export const MULTICALL_ABI = [
       },
       {
         internalType: "string",
-        name: "color",
+        name: "uri",
         type: "string",
       },
     ],
@@ -59,17 +59,17 @@ export const MULTICALL_ABI = [
         components: [
           {
             internalType: "uint256",
-            name: "pps",
+            name: "ups",
             type: "uint256",
           },
           {
             internalType: "uint256",
-            name: "pixelPrice",
+            name: "unitPrice",
             type: "uint256",
           },
           {
             internalType: "uint256",
-            name: "pixelBalance",
+            name: "unitBalance",
             type: "uint256",
           },
           {
@@ -125,7 +125,7 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "uint256",
-            name: "pps",
+            name: "ups",
             type: "uint256",
           },
           {
@@ -150,7 +150,7 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "string",
-            name: "color",
+            name: "uri",
             type: "string",
           },
         ],
@@ -201,7 +201,7 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "uint256",
-            name: "pps",
+            name: "ups",
             type: "uint256",
           },
           {
@@ -226,7 +226,7 @@ export const MULTICALL_ABI = [
           },
           {
             internalType: "string",
-            name: "color",
+            name: "uri",
             type: "string",
           },
         ],
