@@ -1,7 +1,7 @@
 {
   "miniapp": {
     "version": "next",
-    "name": "Pixel Miner",
+    "name": "Farplace",
     "iconUrl": "https://farplace-miniapp.vercel.app/media/icon.png",
     "homeUrl": "https://farplace-miniapp.vercel.app/",
     "splashImageUrl": "https://farplace-miniapp.vercel.app/media/splash.png",

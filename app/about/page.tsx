@@ -340,11 +340,11 @@ export default function AboutPage() {
 
           <section className="bg-zinc-700 px-4 py-3">
             <h2 className="text-sm font-bold text-white mb-2">
-              What Is Pixel Miner
+              What Is Farplace
             </h2>
               <ul className="space-y-1 text-sm text-zinc-300 list-disc list-inside">
-                <li>Pixel Miner is a competitive mining game on Base</li>
-                <li>Mine pixels through a continuous Dutch auction instead of proof-of-work or staking</li>
+                <li>Farplace is a competitive mining game on Base</li>
+                <li>Mine tiles through a continuous Dutch auction instead of proof-of-work or staking</li>
                 <li>Auction revenue increases liquidity and scarcity</li>
               </ul>
           </section>

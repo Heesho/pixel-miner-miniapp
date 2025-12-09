@@ -14,26 +14,26 @@ const heroImageUrl = `${appDomain}/media/hero.png`;
 const splashImageUrl = `${appDomain}/media/splash.png`;
 
 const miniAppEmbed = {
-  version: "1",
+  version: "next",
   imageUrl: heroImageUrl,
   button: {
-    title: "Start Mining",
+    title: "Open Farplace",
     action: {
       type: "launch_miniapp" as const,
-      name: "Pixel Miner",
+      name: "Farplace",
       url: appDomain,
       splashImageUrl,
-      splashBackgroundColor: "#FEE7EC",
+      splashBackgroundColor: "#18181b",
     },
   },
 };
 
 export const metadata: Metadata = {
-  title: "Pixel Miner",
-  description: "Mine pixels and earn rewards on Base blockchain.",
+  title: "Farplace",
+  description: "Mine tiles and earn rewards on Base blockchain.",
   openGraph: {
-    title: "Pixel Miner - Mine Pixels on Base",
-    description: "Command your pixel mining operation and compete with other miners to earn rewards.",
+    title: "Farplace",
+    description: "Mine tiles and earn rewards on Base blockchain.",
     url: appDomain,
     images: [
       {
