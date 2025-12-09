@@ -776,10 +776,11 @@ export default function HomePage() {
     neynarUser?.user,
   ]);
 
-  // Use slot ups if available and > 0, otherwise fall back to base rig ups
+  // Use slot ups if available and > 0, otherwise fall back to base rig ups divided by capacity (256 slots)
+  const CAPACITY = 256n;
   const displayUps = slotState && slotState.ups > 0n
     ? slotState.ups
-    : (rigState?.ups ?? 0n);
+    : ((rigState?.ups ?? 0n) / CAPACITY);
   const glazeRateDisplay = displayUps > 0n
     ? formatTokenAmount(displayUps, CORE_DECIMALS, 4)
     : "—";
