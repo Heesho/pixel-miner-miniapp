@@ -940,8 +940,8 @@ export default function HomePage() {
             )}
             onClick={neynarUser?.user?.fid ? handleViewKingGlazerProfile : undefined}
           >
-            <div className="text-sm font-bold text-white mb-1">
-              Owner <span className="text-zinc-400 font-normal">· {formatElapsedTime(elapsedSeconds)}</span>
+            <div className="text-xs text-zinc-400 mb-1">
+              Owner <span className="text-zinc-500">· {formatElapsedTime(elapsedSeconds)}</span>
             </div>
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8 flex-shrink-0">
