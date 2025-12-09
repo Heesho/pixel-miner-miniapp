@@ -1,29 +1,10 @@
 {
   "miniapp": {
-    "version": "1",
+    "version": "next",
     "name": "Pixel Miner",
-    "tagline": "Mine pixels, earn rewards on Base",
-    "description": "Command your pixel mining operation and compete with other miners to earn rewards on Base blockchain.",
     "iconUrl": "https://farplace-miniapp.vercel.app/media/icon.png",
     "homeUrl": "https://farplace-miniapp.vercel.app/",
     "splashImageUrl": "https://farplace-miniapp.vercel.app/media/splash.png",
-    "splashBackgroundColor": "#FEE7EC",
-    "heroImageUrl": "https://farplace-miniapp.vercel.app/media/hero.png",
-    "buttonTitle": "Start Mining",
-    "ogTitle": "Pixel Miner - Mine Pixels on Base",
-    "ogDescription": "Command your pixel mining operation and compete with other miners to earn rewards.",
-    "ogImageUrl": "https://farplace-miniapp.vercel.app/media/hero.png",
-    "requiredChains": [
-      "eip155:8453"
-    ],
-    "primaryCategory": "finance",
-    "tags": [
-      "gaming",
-      "base",
-      "rewards"
-    ],
-    "actions": [
-      "viewProfile"
-    ]
+    "splashBackgroundColor": "#18181b"
   }
 }
