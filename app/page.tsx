@@ -1013,8 +1013,10 @@ export default function HomePage() {
               <div className="text-xs text-zinc-400">
                 Mining Rate
               </div>
-              {slotState && slotState.multiplier > 0n && (() => {
-                const mult = Number(slotState.multiplier) / 1e18;
+              {(() => {
+                const mult = slotState && slotState.multiplier > 0n
+                  ? Number(slotState.multiplier) / 1e18
+                  : 1;
                 // Color based on multiplier: 1x = zinc, 2-3x = blue, 4-6x = purple, 7-9x = orange, 10x = gold/fire
                 const getMultiplierStyle = () => {
                   if (mult >= 10) return "text-yellow-400 animate-pulse font-black";
