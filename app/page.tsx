@@ -1004,8 +1004,26 @@ export default function HomePage() {
         {/* Stats Row - two solid blocks side by side */}
         <div className="flex">
           <div className="flex-1 px-4 py-2 bg-zinc-800">
-            <div className="text-xs text-zinc-400">
-              Mining Rate
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-zinc-400">
+                Mining Rate
+              </div>
+              {slotState && slotState.multiplier > 0n && (() => {
+                const mult = Number(slotState.multiplier) / 1e18;
+                // Color based on multiplier: 1x = zinc, 2-3x = blue, 4-6x = purple, 7-9x = orange, 10x = gold/fire
+                const getMultiplierStyle = () => {
+                  if (mult >= 10) return "text-yellow-400 animate-pulse font-black";
+                  if (mult >= 7) return "text-orange-400 font-bold";
+                  if (mult >= 4) return "text-purple-400 font-bold";
+                  if (mult >= 2) return "text-blue-400 font-semibold";
+                  return "text-zinc-400";
+                };
+                return (
+                  <div className={`text-sm ${getMultiplierStyle()}`}>
+                    {mult >= 10 ? "🔥 " : ""}{mult.toFixed(0)}x{mult >= 10 ? " 🔥" : ""}
+                  </div>
+                );
+              })()}
             </div>
             <div className="text-xl font-bold text-white flex items-center gap-1">
               <CoreIcon size={16} />{glazeRateDisplay}<span className="text-sm text-zinc-400">/s</span>
